@@ -33,7 +33,7 @@ export function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
         </div>
         <div className="space-y-1 text-center">
           <h1 className="text-3xl font-semibold tracking-tight">Hi, I&apos;m {name}</h1>
-          <p className="text-muted-foreground">Enter your password to continue.</p>
+          <p className="text-muted-foreground">Whisper the secret word, if you dare… 👻</p>
         </div>
         <label htmlFor="password" className="sr-only">
           Password
