@@ -1,0 +1,9 @@
+{
+  "name": "hermik",
+  "private": true,
+  "workspaces": ["server", "client"],
+  "scripts": {
+    "test": "npm test -w server && npm test -w client",
+    "build": "npm run build -w client && npm run build -w server"
+  }
+}
