@@ -8,9 +8,13 @@ import { cn } from '@/lib/utils';
 const iconButton =
   'grid size-10 shrink-0 place-items-center rounded-full text-muted-foreground transition hover:bg-bubble-assistant active:scale-95 disabled:opacity-40';
 
-function AttachItem({ icon, children }: { icon: ReactNode; children: ReactNode }) {
+function AttachItem({ icon, index, children }: { icon: ReactNode; index: number; children: ReactNode }) {
   return (
-    <MenuItem disabled className="min-h-11 gap-3 rounded-xl px-3 text-[15px] sm:min-h-11 sm:text-[15px]">
+    <MenuItem
+      disabled
+      style={{ animationDelay: `${60 + index * 45}ms` }}
+      className="min-h-11 origin-left animate-pop gap-3 rounded-xl px-3 text-[15px] sm:min-h-11 sm:text-[15px]"
+    >
       {icon}
       <span className="flex-1">{children}</span>
       <span className="rounded-full bg-bubble-assistant px-2 py-0.5 text-xs text-muted-foreground">Soon</span>
@@ -22,13 +26,37 @@ function AttachItem({ icon, children }: { icon: ReactNode; children: ReactNode }
 function AttachMenu() {
   return (
     <Menu>
-      <MenuTrigger aria-label="Add attachment" className={cn(iconButton, 'text-foreground')}>
-        <Plus className="size-6" strokeWidth={1.75} />
+      {/* The + turns into an × while the menu is open. */}
+      <MenuTrigger
+        aria-label="Add attachment"
+        className={cn(iconButton, 'text-foreground data-popup-open:bg-bubble-assistant')}
+      >
+        <Plus
+          className="size-6 transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] in-data-popup-open:rotate-45"
+          strokeWidth={1.75}
+        />
       </MenuTrigger>
-      <MenuPopup side="top" align="start" sideOffset={12} className="w-60 rounded-2xl p-1 shadow-soft">
-        <AttachItem icon={<Image className="size-5" />}>Photo library</AttachItem>
-        <AttachItem icon={<Camera className="size-5" />}>Take photo</AttachItem>
-        <AttachItem icon={<FileText className="size-5" />}>File</AttachItem>
+      {/* Springs up out of the + button; shrinks back into it on close. */}
+      <MenuPopup
+        side="top"
+        align="start"
+        sideOffset={12}
+        className={cn(
+          'w-60 rounded-2xl p-1 shadow-soft',
+          'transition-[scale,opacity,translate] duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]',
+          'data-starting-style:translate-y-2 data-starting-style:scale-50 data-starting-style:opacity-0',
+          'data-ending-style:translate-y-1 data-ending-style:scale-75 data-ending-style:opacity-0 data-ending-style:duration-150 data-ending-style:ease-in',
+        )}
+      >
+        <AttachItem index={0} icon={<Image className="size-5" />}>
+          Photo library
+        </AttachItem>
+        <AttachItem index={1} icon={<Camera className="size-5" />}>
+          Take photo
+        </AttachItem>
+        <AttachItem index={2} icon={<FileText className="size-5" />}>
+          File
+        </AttachItem>
       </MenuPopup>
     </Menu>
   );
