@@ -1,4 +1,4 @@
-import { Clock, Wrench } from 'lucide-react';
+import { Check, Clock, Wrench } from 'lucide-react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { ToolChip } from '@/chat/reducer';
@@ -69,52 +69,19 @@ export function TypingDots() {
   );
 }
 
-// A check mark that draws itself inside a popping green circle.
-function DrawnCheck() {
-  return (
-    <svg viewBox="0 0 24 24" aria-label="Done" className="tool-check size-6 shrink-0">
-      <circle cx="12" cy="12" r="11" className="fill-success/15" />
-      <path
-        d="M7 12.5l3.2 3.2L17 9"
-        pathLength={1}
-        className="tool-check-path fill-none stroke-success-foreground"
-        strokeWidth={2.4}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-// Running: the tile bobs and the label shimmers. Done: the tile hops, the check draws itself,
-// and the card glows green for a moment.
 function ToolCard({ tool }: { tool: ToolChip }) {
   return (
-    <div
-      className={cn(
-        'flex w-full max-w-[85%] origin-bottom-left items-center gap-3 rounded-3xl bg-bubble-assistant p-3',
-        tool.done ? 'tool-done' : 'animate-pop',
-      )}
-    >
-      <div
-        className={cn(
-          'grid size-11 shrink-0 place-items-center rounded-2xl bg-surface text-xl',
-          tool.done ? 'tool-hop' : 'tool-bob',
-        )}
-      >
+    <div className="flex w-full max-w-[85%] origin-bottom-left animate-pop items-center gap-3 rounded-3xl bg-bubble-assistant p-3">
+      <div className="grid size-11 shrink-0 place-items-center rounded-2xl bg-surface text-xl">
         {tool.emoji ?? <Wrench className="size-5 text-brand-from" />}
       </div>
       <div className="min-w-0 flex-1">
         <p className="truncate font-medium leading-tight">{tool.name}</p>
-        {tool.done ? (
-          <p key="done" className="truncate text-sm text-muted-foreground animate-pop">
-            Done
-          </p>
-        ) : (
-          <p className="tool-shimmer truncate text-sm">{tool.label ?? 'Working…'}</p>
-        )}
+        <p className="truncate text-sm text-muted-foreground">
+          {tool.done ? 'Done' : (tool.label ?? 'Working…')}
+        </p>
       </div>
-      {tool.done ? <DrawnCheck /> : <Spinner className="size-5 text-brand-from/70" />}
+      {tool.done ? <Check className="size-5 text-success-foreground" /> : <Spinner className="size-5 text-muted-foreground" />}
     </div>
   );
 }
