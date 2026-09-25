@@ -1,0 +1,24 @@
+services:
+  hermik:
+    build: .
+    container_name: hermik
+    restart: unless-stopped
+    env_file: .env
+    # Hermes writes cron output as 0600 in 0700 dirs, so run as the Hermes user.
+    user: "${HERMES_UID:-1000}:${HERMES_GID:-1000}"
+    volumes:
+      - ./data:/data
+      - ${HERMES_CRON_OUTPUT:?set HERMES_CRON_OUTPUT in .env}:/hermes/cron/output:ro
+    expose:
+      - "3000"
+    networks:
+      - hermes
+      - proxy
+
+networks:
+  hermes:
+    external: true
+    name: ${HERMES_NETWORK:?set HERMES_NETWORK in .env}
+  proxy:
+    external: true
+    name: ${NPM_NETWORK:?set NPM_NETWORK in .env}
