@@ -72,7 +72,7 @@ bearer-token auth.
 
 | Table | Columns |
 |-------|---------|
-| `messages` | `id`, `role` (`user` \| `assistant`), `source` (`chat` \| `cron`), `content`, `status` (`complete` \| `error`), `created_at` |
+| `messages` | `id`, `role` (`user` \| `assistant`), `source` (`chat` \| `cron`), `content`, `status` (`complete` \| `error`), `cron_job` (job name for cron messages), `created_at` |
 | `cron_seen` | `path` (unique), `seen_at` |
 | `push_subscriptions` | `id`, `endpoint` (unique), `keys_json`, `created_at` |
 | `settings` | `key` (unique), `value`. Used for `hermes_url` and `hermes_api_key` overrides |
@@ -84,6 +84,7 @@ bearer-token auth.
 2. The server saves the user message, builds the history window, and calls
    Hermes with `stream: true`.
 3. The server responds to the client as SSE with events:
+   - `user` `{ message }` — the saved user message
    - `delta` `{ text }` — a text chunk
    - `tool` `{ phase: "started" | "completed", name, preview?, error? }`
    - `done` `{ message }` — the saved assistant message
@@ -95,7 +96,11 @@ switches apps. The Hermes request runs independently of the client
 connection: it is never aborted when the client disconnects. When the reply
 finishes and the client stream is no longer open, the server sends a Web
 Push with the reply's start (truncated to about 150 characters). On reopen,
-the client reloads `/api/messages`.
+the client reloads `/api/messages`, which also returns `busy`. While `busy` is
+true the client shows "Hermes is still working…" and polls every 3 seconds.
+
+On the very first start, existing cron output files are recorded as seen
+without being delivered, so old history isn't replayed as notifications.
 
 Only one chat request runs at a time. A second send while one is in flight
 returns `409`, and the client disables the send button while waiting.
