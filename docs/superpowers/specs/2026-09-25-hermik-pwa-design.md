@@ -159,6 +159,9 @@ names, logos or artwork.
   `prefers-reduced-motion`.
 - **Tools:** an activity card inside the reply: icon tile, tool name and
   its label (e.g. "web_search · cats"), with a spinner until completed.
+  While running, the tile bobs and wobbles and the label shimmers. On
+  completion the tile hops, a check draws itself in a popping green circle,
+  "Done" pops in, and the card glows green for a moment.
 - **Cron messages:** a small "Scheduled · <job>" caption above the bubble.
 - **Errors:** the bubble plus a pill **Retry** button. It pops in with a
   small wiggle, its arrow nudges every few seconds as a hint, and on tap the
