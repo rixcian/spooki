@@ -125,6 +125,36 @@ returns `409`, and the client disables the send button while waiting.
 - The PWA manifest, icons, and `display: standalone` config make it
   installable to the Home Screen.
 
+### Visual design
+
+Simple, clean, professional and cute, modelled on Meta's Muse AI app
+(reference screenshots from the user, 2026-09-25). Style only: no Meta
+names, logos or artwork.
+
+- **Canvas:** near-white background with a soft sky-blue gradient rising
+  from the bottom edge. Dark mode uses deep navy with a faint blue glow.
+- **Header:** a floating round white button (soft shadow) top-left opens
+  Settings. Centered is an original cute mascot avatar with a white "Hermes"
+  name pill under it. While a reply runs, the pill shows a status line
+  ("Thinking…", or the running tool's label).
+- **Bubbles:** large rounded (≈24px) bubbles with ~17px text. Assistant is
+  light grey on the left; user is light blue on the right. No per-message
+  avatars.
+- **Typing:** a small grey bubble with three bouncing dots.
+- **Tools:** an activity card inside the reply: icon tile, tool name and
+  its label (e.g. "web_search · cats"), with a spinner until completed.
+- **Cron messages:** a small "Scheduled · <job>" caption above the bubble.
+- **Errors:** the bubble plus a pill **Retry** button.
+- **Composer:** a floating white pill ("Message"), with a round blue
+  gradient send button that appears once there is text.
+- **Buttons:** primary actions are blue gradient pills; secondary are
+  light grey pills.
+- **Login:** centered mascot, a friendly heading, pill password field and
+  gradient button.
+- **Settings:** a large title with grouped white cards of rows, like the
+  Muse "Goals" screen.
+- **Font:** Figtree (friendly, rounded), self-hosted via Fontsource.
+
 ## Cron → chat
 
 - In Hermes, cron jobs are configured with `deliver: local`, so output is
