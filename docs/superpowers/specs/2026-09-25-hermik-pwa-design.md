@@ -150,7 +150,7 @@ names, logos or artwork.
   message the greeting shrinks and floats up while the header badge springs
   in ~150ms later, so the avatar appears to move into the header. New
   bubbles, tool cards and typing dots pop in; history loaded on open does not.
-- **Bot name:** renameable in Settings → Assistant (1–40 characters, stored
+- **Bot name:** renameable in Settings (1–40 characters, stored
   in `settings` as `bot_name`, default "Hermik"). It is used in the header,
   greeting, login heading, labels and push titles. The client caches it in
   `localStorage` so the login screen can greet by name. "Reset to env"
@@ -194,11 +194,15 @@ names, logos or artwork.
 - **Login:** centered avatar, a friendly heading, pill password field and
   gradient button.
 - **Settings:** a large title with grouped white cards of rows, like the
-  Muse "Goals" screen.
+  Muse "Goals" screen. The top row matches the chat header exactly, so the
+  avatar and name pill stay in place when switching screens. A round pen
+  pill peeks out from behind the name pill (~0.35s after arriving) and sits
+  beside it. Tapping it edits the name inside the pill (text selected, pen
+  becomes a ✓); Enter, ✓ or leaving the field saves, Escape cancels.
 - **Chat ⇄ Settings transition:** a View Transition (Safari 18+; instant
   elsewhere or with Reduce Motion). Settings slides in from the menu's side
   while the chat sinks back and blurs; the ☰ button spins into the ‹ back
-  button, and the avatar flies between the header and the Assistant card.
+  button, and the avatar and name pill stay put.
   Back plays in reverse. The chat keeps a snapshot of its history while in
   Settings so it reappears fully rendered.
 - **Font:** Figtree (friendly, rounded), self-hosted via Fontsource.

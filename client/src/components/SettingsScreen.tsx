@@ -1,7 +1,7 @@
-import { Bell, ChevronLeft, Clock, LogOut, Moon, Palette, PlugZap, RotateCcw, Smile, Sun } from 'lucide-react';
+import { Bell, ChevronLeft, Clock, LogOut, Moon, Palette, PlugZap, RotateCcw, Sun } from 'lucide-react';
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { FloatingButton, pillPrimary, pillSecondary } from '@/components/FloatingButton';
-import { Mascot } from '@/components/Mascot';
+import { EditableBadge } from '@/components/EditableBadge';
 import { Button } from '@/components/ui/button';
 import { api, type SettingsView, type TestResult } from '@/lib/api';
 import { useBotName } from '@/lib/botName';
@@ -16,8 +16,6 @@ const PUSH_TEXT: Record<PushStatus, string> = {
   'needs-install': 'Add Hermik to your Home Screen (Share → Add to Home Screen) to enable notifications.',
   unsupported: 'This browser does not support push notifications.',
 };
-
-const MAX_NAME = 40;
 
 const THEMES: { mode: ThemeMode; label: string; icon: ReactNode }[] = [
   { mode: 'light', label: 'Light', icon: <Sun className="size-4" /> },
@@ -87,13 +85,11 @@ export function SettingsScreen({ onBack, onLoggedOut }: { onBack: () => void; on
   const [push, setPush] = useState<PushStatus | null>(null);
   const [busy, setBusy] = useState(false);
   const bot = useBotName();
-  const [name, setName] = useState(bot.name);
 
   const apply = (v: SettingsView) => {
     setView(v);
     setUrl(v.hermesUrl);
     setKey('');
-    setName(v.botName);
     bot.setName(v.botName);
   };
 
@@ -122,52 +118,24 @@ export function SettingsScreen({ onBack, onLoggedOut }: { onBack: () => void; on
     });
   };
 
-  const saveName = (e: FormEvent) => {
-    e.preventDefault();
-    void act(async () => {
-      apply(await api.saveSettings({ botName: name }));
-      setNotice('Name saved.');
-    });
-  };
-
   const keyPlaceholder = view?.apiKeySet ? `•••• ${view.apiKeyLast4} (from ${view.keySource})` : 'Not set';
 
   return (
     <div className="min-h-dvh px-4 pt-[max(env(safe-area-inset-top),0.75rem)] pb-[max(env(safe-area-inset-bottom),1.5rem)]">
       <div className="mx-auto max-w-lg space-y-5">
-        <FloatingButton aria-label="Back" onClick={onBack} className="mt-1" style={{ viewTransitionName: 'nav-button' }}>
-          <ChevronLeft className="size-6" />
-        </FloatingButton>
+        {/* Same layout as the chat header, so the avatar and name stay put when switching. */}
+        <div className="relative flex min-h-[5.5rem] items-start justify-center">
+          <FloatingButton
+            aria-label="Back"
+            onClick={onBack}
+            className="absolute top-1 left-0"
+            style={{ viewTransitionName: 'nav-button' }}
+          >
+            <ChevronLeft className="size-6" />
+          </FloatingButton>
+          <EditableBadge onError={setNotice} />
+        </div>
         <h1 className="px-1 text-3xl font-semibold tracking-tight">Settings</h1>
-
-        <Card title="Assistant" icon={<Smile className="size-4" />}>
-          <form onSubmit={saveName} className="space-y-4">
-            <div className="flex items-center gap-4">
-              <div
-                className="size-16 shrink-0 overflow-hidden rounded-full bg-white shadow-soft"
-                style={{ viewTransitionName: 'bot-avatar' }}
-              >
-                <Mascot className="size-16" />
-              </div>
-              <div className="min-w-0 flex-1 space-y-1.5">
-                <label htmlFor="bot-name" className="px-1 text-sm font-medium text-muted-foreground">
-                  Name
-                </label>
-                <input
-                  id="bot-name"
-                  value={name}
-                  maxLength={MAX_NAME}
-                  autoComplete="off"
-                  onChange={(e) => setName(e.target.value)}
-                  className={field}
-                />
-              </div>
-            </div>
-            <Button type="submit" className={pillPrimary} disabled={busy || !name.trim() || name.trim() === bot.name}>
-              Save name
-            </Button>
-          </form>
-        </Card>
 
         <Card title="Appearance" icon={<Palette className="size-4" />}>
           <ThemePicker />

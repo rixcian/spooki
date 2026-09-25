@@ -30,7 +30,10 @@ export function AgentBadge({ status, hidden = false }: { status?: string | null;
       >
         <Mascot className="size-16" thinking={Boolean(status)} />
       </div>
-      <div className="-mt-2 flex max-w-64 flex-col items-center rounded-2xl bg-surface px-4 py-1.5 text-center shadow-soft">
+      <div
+        className="-mt-2 flex max-w-64 flex-col items-center rounded-2xl bg-surface px-4 py-1.5 text-center shadow-soft"
+        style={hidden ? undefined : { viewTransitionName: 'bot-name' }}
+      >
         <span className="font-semibold leading-tight">{name}</span>
         {status && <span className="truncate text-sm text-muted-foreground leading-tight">{status}</span>}
       </div>
