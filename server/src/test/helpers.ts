@@ -1,0 +1,37 @@
+import type { HermesMessage } from '../chat/history.js';
+import type { HermesEvent, HermesTarget, StreamChat } from '../hermes/client.js';
+import type { PushPayload, PushSender } from '../push/sender.js';
+
+export function deferred<T = void>() {
+  let resolve!: (v: T) => void;
+  const promise = new Promise<T>((r) => { resolve = r; });
+  return { promise, resolve };
+}
+
+export function fakeStream(events: HermesEvent[], gate?: Promise<void>) {
+  const calls: { target: HermesTarget; messages: HermesMessage[] }[] = [];
+  const fn: StreamChat = async function* (target, messages) {
+    calls.push({ target, messages });
+    if (gate) await gate;
+    for (const e of events) yield e;
+  };
+  return Object.assign(fn, { calls });
+}
+
+export function fakePush(): PushSender & { sent: PushPayload[] } {
+  const sent: PushPayload[] = [];
+  return { sent, sendToAll: async (p) => { sent.push(p); } };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function parseSseText(text: string): { event: string; data: any }[] {
+  return text
+    .split('\n\n')
+    .map((block) => block.trim())
+    .filter(Boolean)
+    .map((block) => {
+      const event = /^event: (.*)$/m.exec(block)?.[1] ?? 'message';
+      const data = /^data: (.*)$/m.exec(block)?.[1] ?? 'null';
+      return { event, data: JSON.parse(data) };
+    });
+}
