@@ -59,7 +59,8 @@ export function EditableBadge({ onError }: { onError: (message: string) => void 
   return (
     <div className="flex flex-col items-center">
       <div
-        className="grid size-16 place-items-center overflow-hidden rounded-full bg-white shadow-soft"
+        // Above the name pill (z-10) and the pen (z-0), which tuck in behind it.
+        className="relative z-20 grid size-16 place-items-center overflow-hidden rounded-full bg-white shadow-soft"
         style={{ viewTransitionName: 'bot-avatar' }}
       >
         <Mascot className="size-16" />

@@ -464,6 +464,13 @@
 :root[data-nav='back']::view-transition-new(root) {
   animation: vt-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+/* Keep the avatar above its name pill while they morph, too. */
+::view-transition-group(bot-avatar) {
+  z-index: 2;
+}
+::view-transition-group(bot-name) {
+  z-index: 1;
+}
 /* Shared elements only morph on screen changes, not on a theme switch. */
 :root[data-nav='theme'] * {
   view-transition-name: none !important;

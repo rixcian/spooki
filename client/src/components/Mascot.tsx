@@ -25,7 +25,8 @@ export function AgentBadge({ status, hidden = false }: { status?: string | null;
       )}
     >
       <div
-        className="grid size-16 place-items-center overflow-hidden rounded-full bg-white shadow-soft"
+        // Above the name pill, which tucks in behind it.
+        className="relative z-10 grid size-16 place-items-center overflow-hidden rounded-full bg-white shadow-soft"
         style={hidden ? undefined : { viewTransitionName: 'bot-avatar' }}
       >
         <Mascot className="size-16" thinking={Boolean(status)} />
