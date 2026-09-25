@@ -135,7 +135,6 @@ export function SettingsScreen({ onBack, onLoggedOut }: { onBack: () => void; on
           </FloatingButton>
           <EditableBadge onError={setNotice} />
         </div>
-        <h1 className="px-1 text-3xl font-semibold tracking-tight">Settings</h1>
 
         <Card title="Appearance" icon={<Palette className="size-4" />}>
           <ThemePicker />

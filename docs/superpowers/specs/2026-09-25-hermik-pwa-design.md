@@ -193,7 +193,7 @@ names, logos or artwork.
   light grey pills.
 - **Login:** centered avatar, a friendly heading, pill password field and
   gradient button.
-- **Settings:** a large title with grouped white cards of rows, like the
+- **Settings:** no page title; grouped white cards of rows, like the
   Muse "Goals" screen. The top row matches the chat header exactly, so the
   avatar and name pill stay in place when switching screens. A round pen
   pill peeks out from behind the name pill (~0.35s after arriving) and sits
