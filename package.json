@@ -1,5 +1,5 @@
 {
-  "name": "hermik",
+  "name": "spooki",
   "private": true,
   "workspaces": ["server", "client"],
   "scripts": {

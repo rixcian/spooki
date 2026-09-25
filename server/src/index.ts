@@ -21,7 +21,7 @@ import { SettingsStore, botName, effectiveHermes } from './settings/store.js';
 async function main() {
   const config = loadConfig(process.env);
   mkdirSync(config.dataDir, { recursive: true });
-  const db = openDb(join(config.dataDir, 'hermik.db'));
+  const db = openDb(join(config.dataDir, 'spooki.db'));
 
   const messages = new MessageStore(db);
   const settings = new SettingsStore(db);
@@ -60,7 +60,7 @@ async function main() {
   await startCronWatcher({ dir: config.cronOutputDir, seen, messages, push, botName: () => botName(settings) });
 
   serve({ fetch: app.fetch, port: config.port }, (info) => {
-    console.log(`hermik listening on :${info.port}`);
+    console.log(`spooki listening on :${info.port}`);
   });
 }
 

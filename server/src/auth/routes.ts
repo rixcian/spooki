@@ -4,7 +4,7 @@ import type { PasswordVerifier } from './password.js';
 import type { RateLimiter } from './rateLimit.js';
 import { SESSION_TTL_MS, type SessionStore } from './sessions.js';
 
-export const SESSION_COOKIE = 'hermik_session';
+export const SESSION_COOKIE = 'spooki_session';
 
 export interface AuthDeps {
   verify: PasswordVerifier;

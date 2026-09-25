@@ -5,7 +5,7 @@ import type { HermesTarget } from '../hermes/client.js';
 export const HERMES_URL_KEY = 'hermes_url';
 export const HERMES_KEY_KEY = 'hermes_api_key';
 export const BOT_NAME_KEY = 'bot_name';
-export const DEFAULT_BOT_NAME = 'Hermik';
+export const DEFAULT_BOT_NAME = 'Spooki';
 export const MAX_BOT_NAME = 40;
 
 export class SettingsStore {

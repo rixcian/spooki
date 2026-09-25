@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 export function Mascot({ className, thinking = false }: { className?: string; thinking?: boolean }) {
   return (
     <img
-      src="/hermik-avatar.jpg"
+      src="/spooki-avatar.jpg"
       alt=""
       aria-hidden="true"
       draggable={false}

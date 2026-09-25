@@ -12,8 +12,8 @@ import { cn } from '@/lib/utils';
 const PUSH_TEXT: Record<PushStatus, string> = {
   enabled: 'Notifications are on.',
   disabled: 'Get a ping when a reply arrives or a scheduled job finishes.',
-  denied: 'Notifications are blocked. Allow them in iOS Settings → Notifications → Hermik.',
-  'needs-install': 'Add Hermik to your Home Screen (Share → Add to Home Screen) to enable notifications.',
+  denied: 'Notifications are blocked. Allow them in iOS Settings → Notifications → Spooki.',
+  'needs-install': 'Add Spooki to your Home Screen (Share → Add to Home Screen) to enable notifications.',
   unsupported: 'This browser does not support push notifications.',
 };
 

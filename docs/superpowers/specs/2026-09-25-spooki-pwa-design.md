@@ -1,4 +1,4 @@
-# Hermik — Hermes Agent chat PWA
+# Spooki — Hermes Agent chat PWA
 
 **Date:** 2026-09-25
 **Status:** Approved design, pending implementation plan
@@ -6,7 +6,7 @@
 ## Goal
 
 Replace the Telegram bot as the way to talk to a self-hosted Nous Research
-Hermes Agent. Hermik is a single-user chat PWA installed on an iPhone Home
+Hermes Agent. Spooki is a single-user chat PWA installed on an iPhone Home
 Screen. It supports:
 
 1. Plain text chat with streaming replies.
@@ -29,7 +29,7 @@ the server.
 iPhone (Home Screen PWA)
    │ HTTPS (Nginx Proxy Manager, Let's Encrypt)
    ▼
-hermik container (one Node process, port 3000)
+spooki container (one Node process, port 3000)
    ├─ serves the built PWA (static files)
    ├─ /api/auth/*      login / logout
    ├─ /api/chat        proxies to Hermes, streams SSE back
@@ -58,9 +58,9 @@ Hermes' built-in API server (`API_SERVER_ENABLED=true`, default port 8642)
 exposes an OpenAI-compatible `POST /v1/chat/completions` endpoint with
 bearer-token auth.
 
-- Hermik calls it in **stateless mode**: every request sends the last 40
+- Spooki calls it in **stateless mode**: every request sends the last 40
   messages from the SQLite history as the `messages` array, with
-  `stream: true`. Hermik's DB is the source of truth for the conversation.
+  `stream: true`. Spooki's DB is the source of truth for the conversation.
 - Cron messages are sent to Hermes as `assistant` turns, prefixed with
   `[Scheduled: <job name>]`, so Hermes has context when the user replies to
   one.
@@ -140,9 +140,9 @@ names, logos or artwork.
   revealed as a circle growing from the tapped option (View Transitions);
   the segmented control's thumb slides with a spring.
 - **Header:** a floating round white button (soft shadow) top-left opens
-  Settings. Centered is the bot's avatar (the user's plush "Hermik"
-  character, `client/public/hermik-avatar.jpg`) with a white "Hermik" name pill
-  under it. The bot is called **Hermik** everywhere in the UI and in push
+  Settings. Centered is the bot's avatar (the user's plush "Spooki"
+  character, `client/public/spooki-avatar.jpg`) with a white "Spooki" name pill
+  under it. The bot is called **Spooki** everywhere in the UI and in push
   titles; "Hermes" only names the backend server. While a reply runs, the pill shows a status line
   ("Thinking…", or the running tool's label).
 - **Empty chat:** no header badge. A big centered avatar (gently bobbing)
@@ -151,7 +151,7 @@ names, logos or artwork.
   in ~150ms later, so the avatar appears to move into the header. New
   bubbles, tool cards and typing dots pop in; history loaded on open does not.
 - **Bot name:** renameable in Settings (1–40 characters, stored
-  in `settings` as `bot_name`, default "Hermik"). It is used in the header,
+  in `settings` as `bot_name`, default "Spooki"). It is used in the header,
   greeting, login heading, labels and push titles. The client caches it in
   `localStorage` so the login screen can greet by name. "Reset to env"
   resets only the Hermes connection, not the name.
@@ -171,7 +171,7 @@ names, logos or artwork.
   pill squishes and the arrow spins a full turn (~0.45s) before retrying.
 - **Composer:** a floating white rounded box: **+** on the left, the
   "Message" field, then a **mic** and a round **send** button (pale when
-  empty, blue gradient with text). While Hermik is working, send becomes a
+  empty, blue gradient with text). While Spooki is working, send becomes a
   dark round **stop** button with a square.
   - **+** opens a menu (Photo library, Take photo, File), all disabled with
     a "Soon" badge. Attachments are still out of scope; this is design only.
@@ -211,7 +211,7 @@ names, logos or artwork.
 
 - In Hermes, cron jobs are configured with `deliver: local`, so output is
   written under `~/.hermes/cron/output/`.
-- That directory is mounted **read-only** into the hermik container at
+- That directory is mounted **read-only** into the spooki container at
   `CRON_OUTPUT_DIR` (default `/hermes/cron/output`).
 - The watcher (chokidar, plus a full scan on startup) handles each new
   file whose path is not in `cron_seen`: it parses the job name and content,
@@ -265,13 +265,13 @@ Precedence for the Hermes URL and key: **settings table > env**.
 - A multi-stage `Dockerfile`: build the client, build the server, then a
   slim Node runtime.
 - `docker-compose.yml`:
-  - The hermik service joins the external Docker networks that Hermes and
+  - The spooki service joins the external Docker networks that Hermes and
     Nginx Proxy Manager use.
   - `./data:/data`.
   - The Hermes data volume/path is mounted read-only at
     `/hermes/cron/output`.
   - `restart: unless-stopped`.
-- **HTTPS:** an NPM proxy host → `hermik:3000` with a Let's Encrypt
+- **HTTPS:** an NPM proxy host → `spooki:3000` with a Let's Encrypt
   certificate. The server sets `X-Accel-Buffering: no` on SSE responses so
   nginx does not buffer them. No custom NPM config is needed.
 - **Deploy command:** `git pull && docker compose up -d --build`.

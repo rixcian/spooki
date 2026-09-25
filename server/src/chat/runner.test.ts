@@ -69,7 +69,7 @@ describe('ChatRunner', () => {
     await handle.finished;
     expect(events.map((e) => e.type)).toEqual(['user']);
     expect(messages.last()?.content).toBe('Background answer');
-    expect(push.sent).toEqual([{ title: 'Hermik', body: 'Background answer', url: '/' }]);
+    expect(push.sent).toEqual([{ title: 'Spooki', body: 'Background answer', url: '/' }]);
   });
 
   it('titles background pushes with the current bot name', async () => {

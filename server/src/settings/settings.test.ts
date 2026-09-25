@@ -36,7 +36,7 @@ describe('settings routes', () => {
     const text = await res.text();
     expect(JSON.parse(text)).toEqual({
       hermesUrl: 'http://hermes:8642', urlSource: 'env', apiKeySet: true, apiKeyLast4: '1234', keySource: 'env',
-      botName: 'Hermik',
+      botName: 'Spooki',
     });
     expect(text).not.toContain('env-key-1234');
   });

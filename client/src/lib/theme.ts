@@ -3,7 +3,7 @@ import { useSyncExternalStore } from 'react';
 
 export type ThemeMode = 'light' | 'dark' | 'auto';
 
-const STORAGE_KEY = 'hermik.theme';
+const STORAGE_KEY = 'spooki.theme';
 export const DARK_FROM_HOUR = 19;
 export const DARK_UNTIL_HOUR = 7;
 const THEME_COLOR = { light: '#fbfbfc', dark: '#0b1020' };

@@ -1,8 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import { api } from '@/lib/api';
 
-export const DEFAULT_BOT_NAME = 'Hermik';
-const STORAGE_KEY = 'hermik.botName';
+export const DEFAULT_BOT_NAME = 'Spooki';
+const STORAGE_KEY = 'spooki.botName';
 
 function readCached(): string {
   try {

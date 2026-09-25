@@ -64,7 +64,7 @@ describe('cron watcher', () => {
   };
 
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), 'hermik-cron-'));
+    dir = mkdtempSync(join(tmpdir(), 'spooki-cron-'));
     const db = openDb(':memory:');
     messages = new MessageStore(db);
     seen = new CronSeenStore(db);
@@ -80,7 +80,7 @@ describe('cron watcher', () => {
     expect(messages.list()).toHaveLength(1);
     expect(messages.list()[0]).toMatchObject({ role: 'assistant', source: 'cron', cronJob: 'Morning briefing' });
     expect(deps.push.sent).toHaveLength(1);
-    expect(deps.push.sent[0].title).toBe('Hermik · Morning briefing');
+    expect(deps.push.sent[0].title).toBe('Spooki · Morning briefing');
   });
 
   it('titles cron pushes with the current bot name', async () => {

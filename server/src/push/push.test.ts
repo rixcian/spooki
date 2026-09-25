@@ -15,7 +15,7 @@ beforeEach(() => { subs = new SubscriptionStore(openDb(':memory:')); });
 
 describe('loadOrCreateVapid', () => {
   it('generates once and persists', () => {
-    const dataDir = mkdtempSync(join(tmpdir(), 'hermik-'));
+    const dataDir = mkdtempSync(join(tmpdir(), 'spooki-'));
     const cfg = { dataDir, vapidSubject: 'mailto:a@b.c' };
     const first = loadOrCreateVapid(cfg);
     expect(first.publicKey.length).toBeGreaterThan(20);
@@ -58,9 +58,9 @@ describe('createPushSender', () => {
       },
       (...a) => logs.push(a),
     );
-    await sender.sendToAll({ title: 'Hermik', body: 'hello', url: '/' });
+    await sender.sendToAll({ title: 'Spooki', body: 'hello', url: '/' });
     expect(sent).toHaveLength(3);
-    expect(JSON.parse(sent[0].payload)).toEqual({ title: 'Hermik', body: 'hello', url: '/' });
+    expect(JSON.parse(sent[0].payload)).toEqual({ title: 'Spooki', body: 'hello', url: '/' });
     expect(subs.all().map((s) => s.endpoint)).toEqual([sub(1).endpoint, sub(3).endpoint]);
     expect(logs).toHaveLength(1);
   });

@@ -35,7 +35,7 @@ async function loginCookie(): Promise<string> {
   const res = await app.request('/api/auth/login', {
     method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ password: 'pw' }),
   });
-  return /hermik_session=[^;]*/.exec(res.headers.get('set-cookie') ?? '')![0];
+  return /spooki_session=[^;]*/.exec(res.headers.get('set-cookie') ?? '')![0];
 }
 
 describe('createApp', () => {

@@ -1,7 +1,7 @@
 services:
-  hermik:
+  spooki:
     build: .
-    container_name: hermik
+    container_name: spooki
     restart: unless-stopped
     env_file: .env
     # Hermes writes cron output as 0600 in 0700 dirs, so run as the Hermes user.
