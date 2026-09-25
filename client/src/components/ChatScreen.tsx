@@ -39,6 +39,31 @@ function Greeting({ visible }: { visible: boolean }) {
   );
 }
 
+const RETRY_SPIN_MS = 450;
+
+// Pops in with a wiggle, nudges its arrow as a hint, and spins it around before retrying.
+function RetryButton({ onRetry }: { onRetry: () => void }) {
+  const [spinning, setSpinning] = useState(false);
+
+  function click() {
+    if (spinning) return;
+    setSpinning(true);
+    setTimeout(onRetry, RETRY_SPIN_MS);
+  }
+
+  return (
+    <div className="retry-enter origin-left self-start">
+      <Button
+        className={`${pillSecondary} h-10 px-4 transition-transform active:scale-90 sm:h-10`}
+        onClick={click}
+        aria-busy={spinning}
+      >
+        <RotateCw className={spinning ? 'retry-spin' : 'retry-nudge'} /> Retry
+      </Button>
+    </div>
+  );
+}
+
 export function ChatScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
   const { state, send, retry, stop } = useChat();
   const { name } = useBotName();
@@ -115,13 +140,7 @@ export function ChatScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
               <p className="px-2 text-sm text-muted-foreground">{name} is still working — you&apos;ll get a notification.</p>
             </div>
           )}
-          {canRetry && (
-            <div className="origin-left animate-pop">
-              <Button className={`${pillSecondary} h-10 px-4 sm:h-10`} onClick={retry}>
-                <RotateCw /> Retry
-              </Button>
-            </div>
-          )}
+          {canRetry && <RetryButton onRetry={retry} />}
           {state.error && (
             <p role="alert" className="px-2 text-sm text-destructive-foreground">
               {state.error}

@@ -160,7 +160,9 @@ names, logos or artwork.
 - **Tools:** an activity card inside the reply: icon tile, tool name and
   its label (e.g. "web_search · cats"), with a spinner until completed.
 - **Cron messages:** a small "Scheduled · <job>" caption above the bubble.
-- **Errors:** the bubble plus a pill **Retry** button.
+- **Errors:** the bubble plus a pill **Retry** button. It pops in with a
+  small wiggle, its arrow nudges every few seconds as a hint, and on tap the
+  pill squishes and the arrow spins a full turn (~0.45s) before retrying.
 - **Composer:** a floating white rounded box: **+** on the left, the
   "Message" field, then a **mic** and a round **send** button (pale when
   empty, blue gradient with text). While Hermik is working, send becomes a
