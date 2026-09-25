@@ -35,3 +35,11 @@ export function parseSseText(text: string): { event: string; data: any }[] {
       return { event, data: JSON.parse(data) };
     });
 }
+
+export async function waitFor(check: () => boolean, timeoutMs = 3000): Promise<void> {
+  const start = Date.now();
+  while (!check()) {
+    if (Date.now() - start > timeoutMs) throw new Error('waitFor timed out');
+    await new Promise((r) => setTimeout(r, 25));
+  }
+}
