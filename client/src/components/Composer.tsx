@@ -1,6 +1,7 @@
 import { ArrowUp, Camera, FileText, Image, Mic, Plus, Square } from 'lucide-react';
 import { useCallback, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from 'react';
 import { Menu, MenuItem, MenuPopup, MenuTrigger } from '@/components/ui/menu';
+import { useBotName } from '@/lib/botName';
 import { useSpeechToText } from '@/lib/speech';
 import { cn } from '@/lib/utils';
 
@@ -43,6 +44,7 @@ export function Composer({
   onStop: () => void;
 }) {
   const [text, setText] = useState('');
+  const { name } = useBotName();
   const textRef = useRef(text);
   textRef.current = text;
   const speech = useSpeechToText(
@@ -95,7 +97,7 @@ export function Composer({
         {busy ? (
           <button
             type="button"
-            aria-label="Stop Hermik"
+            aria-label={`Stop ${name}`}
             onClick={onStop}
             className="grid size-10 shrink-0 place-items-center rounded-full bg-foreground text-background transition active:scale-95"
           >

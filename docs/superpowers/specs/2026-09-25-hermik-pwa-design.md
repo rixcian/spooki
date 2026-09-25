@@ -139,6 +139,16 @@ names, logos or artwork.
   under it. The bot is called **Hermik** everywhere in the UI and in push
   titles; "Hermes" only names the backend server. While a reply runs, the pill shows a status line
   ("Thinking…", or the running tool's label).
+- **Empty chat:** no header badge. A big centered avatar (gently bobbing)
+  with "What can I take off your plate?" and a subtitle. On the first
+  message the greeting shrinks and floats up while the header badge springs
+  in ~150ms later, so the avatar appears to move into the header. New
+  bubbles, tool cards and typing dots pop in; history loaded on open does not.
+- **Bot name:** renameable in Settings → Assistant (1–40 characters, stored
+  in `settings` as `bot_name`, default "Hermik"). It is used in the header,
+  greeting, login heading, labels and push titles. The client caches it in
+  `localStorage` so the login screen can greet by name. "Reset to env"
+  resets only the Hermes connection, not the name.
 - **Bubbles:** large rounded (≈24px) bubbles with ~17px text. Assistant is
   light grey on the left; user is light blue on the right. No per-message
   avatars.

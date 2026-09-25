@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { Message } from '@/lib/api';
-import { chatReducer, initialChatState, type ChatAction, type ChatState } from './reducer';
+import { chatReducer, initialChatState, isEmptyChat, type ChatAction, type ChatState } from './reducer';
 
 const msg = (id: number, over: Partial<Message> = {}): Message => ({
   id, role: 'assistant', source: 'chat', content: `m${id}`, status: 'complete', cronJob: null, createdAt: '', ...over,
@@ -14,6 +14,16 @@ describe('chatReducer', () => {
     const s = run({ type: 'loaded', messages: [msg(1)], busy: true });
     expect(s.messages).toEqual([msg(1)]);
     expect(s.remoteBusy).toBe(true);
+    expect(s.loaded).toBe(true);
+    expect(initialChatState.loaded).toBe(false);
+  });
+
+  it('is empty only once loaded with no messages and nothing in flight', () => {
+    expect(isEmptyChat(initialChatState)).toBe(false); // still loading: show neither state
+    expect(isEmptyChat(run({ type: 'loaded', messages: [], busy: false }))).toBe(true);
+    expect(isEmptyChat(run({ type: 'loaded', messages: [], busy: true }))).toBe(false);
+    expect(isEmptyChat(run({ type: 'loaded', messages: [], busy: false }, { type: 'send', text: 'hi' }))).toBe(false);
+    expect(isEmptyChat(run({ type: 'loaded', messages: [msg(1)], busy: false }))).toBe(false);
   });
 
   it('runs the happy path: send → user → tools/deltas → finished', () => {

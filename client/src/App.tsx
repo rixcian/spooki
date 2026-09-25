@@ -4,20 +4,11 @@ import { LoginScreen } from '@/components/LoginScreen';
 import { Mascot } from '@/components/Mascot';
 import { SettingsScreen } from '@/components/SettingsScreen';
 import { api, onUnauthorized } from '@/lib/api';
+import { BotNameProvider } from '@/lib/botName';
 
 type View = 'loading' | 'login' | 'chat' | 'settings';
 
-export default function App() {
-  const [view, setView] = useState<View>('loading');
-
-  useEffect(() => {
-    onUnauthorized(() => setView('login'));
-    api
-      .me()
-      .then((r) => setView(r.authenticated ? 'chat' : 'login'))
-      .catch(() => setView('login'));
-  }, []);
-
+function Screen({ view, setView }: { view: View; setView: (v: View) => void }) {
   if (view === 'loading') {
     return (
       <div className="grid h-dvh place-items-center">
@@ -30,4 +21,22 @@ export default function App() {
     return <SettingsScreen onBack={() => setView('chat')} onLoggedOut={() => setView('login')} />;
   }
   return <ChatScreen onOpenSettings={() => setView('settings')} />;
+}
+
+export default function App() {
+  const [view, setView] = useState<View>('loading');
+
+  useEffect(() => {
+    onUnauthorized(() => setView('login'));
+    api
+      .me()
+      .then((r) => setView(r.authenticated ? 'chat' : 'login'))
+      .catch(() => setView('login'));
+  }, []);
+
+  return (
+    <BotNameProvider authenticated={view === 'chat' || view === 'settings'}>
+      <Screen view={view} setView={setView} />
+    </BotNameProvider>
+  );
 }

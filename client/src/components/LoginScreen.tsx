@@ -3,11 +3,13 @@ import { pillPrimary } from '@/components/FloatingButton';
 import { Mascot } from '@/components/Mascot';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api';
+import { useBotName } from '@/lib/botName';
 
 export function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const { name } = useBotName();
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -30,7 +32,7 @@ export function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
           <Mascot className="size-32" />
         </div>
         <div className="space-y-1 text-center">
-          <h1 className="text-3xl font-semibold tracking-tight">Hi, I&apos;m Hermik</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">Hi, I&apos;m {name}</h1>
           <p className="text-muted-foreground">Enter your password to continue.</p>
         </div>
         <label htmlFor="password" className="sr-only">

@@ -1,17 +1,21 @@
-import { Bell, ChevronLeft, LogOut, PlugZap, RotateCcw } from 'lucide-react';
+import { Bell, ChevronLeft, LogOut, PlugZap, RotateCcw, Smile } from 'lucide-react';
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { FloatingButton, pillPrimary, pillSecondary } from '@/components/FloatingButton';
+import { Mascot } from '@/components/Mascot';
 import { Button } from '@/components/ui/button';
 import { api, type SettingsView, type TestResult } from '@/lib/api';
+import { useBotName } from '@/lib/botName';
 import { enablePush, pushStatus, type PushStatus } from '@/lib/push';
 
 const PUSH_TEXT: Record<PushStatus, string> = {
   enabled: 'Notifications are on.',
-  disabled: 'Get a ping when Hermik replies or a scheduled job finishes.',
+  disabled: 'Get a ping when a reply arrives or a scheduled job finishes.',
   denied: 'Notifications are blocked. Allow them in iOS Settings → Notifications → Hermik.',
   'needs-install': 'Add Hermik to your Home Screen (Share → Add to Home Screen) to enable notifications.',
   unsupported: 'This browser does not support push notifications.',
 };
+
+const MAX_NAME = 40;
 
 const field =
   'h-12 w-full rounded-2xl bg-bubble-assistant px-4 text-[17px] outline-none placeholder:text-muted-foreground/70 focus-visible:ring-2 focus-visible:ring-brand-from/40';
@@ -36,11 +40,15 @@ export function SettingsScreen({ onBack, onLoggedOut }: { onBack: () => void; on
   const [test, setTest] = useState<TestResult | null>(null);
   const [push, setPush] = useState<PushStatus | null>(null);
   const [busy, setBusy] = useState(false);
+  const bot = useBotName();
+  const [name, setName] = useState(bot.name);
 
   const apply = (v: SettingsView) => {
     setView(v);
     setUrl(v.hermesUrl);
     setKey('');
+    setName(v.botName);
+    bot.setName(v.botName);
   };
 
   useEffect(() => {
@@ -68,6 +76,14 @@ export function SettingsScreen({ onBack, onLoggedOut }: { onBack: () => void; on
     });
   };
 
+  const saveName = (e: FormEvent) => {
+    e.preventDefault();
+    void act(async () => {
+      apply(await api.saveSettings({ botName: name }));
+      setNotice('Name saved.');
+    });
+  };
+
   const keyPlaceholder = view?.apiKeySet ? `•••• ${view.apiKeyLast4} (from ${view.keySource})` : 'Not set';
 
   return (
@@ -77,6 +93,32 @@ export function SettingsScreen({ onBack, onLoggedOut }: { onBack: () => void; on
           <ChevronLeft className="size-6" />
         </FloatingButton>
         <h1 className="px-1 text-3xl font-semibold tracking-tight">Settings</h1>
+
+        <Card title="Assistant" icon={<Smile className="size-4" />}>
+          <form onSubmit={saveName} className="space-y-4">
+            <div className="flex items-center gap-4">
+              <div className="size-16 shrink-0 overflow-hidden rounded-full bg-white shadow-soft">
+                <Mascot className="size-16" />
+              </div>
+              <div className="min-w-0 flex-1 space-y-1.5">
+                <label htmlFor="bot-name" className="px-1 text-sm font-medium text-muted-foreground">
+                  Name
+                </label>
+                <input
+                  id="bot-name"
+                  value={name}
+                  maxLength={MAX_NAME}
+                  autoComplete="off"
+                  onChange={(e) => setName(e.target.value)}
+                  className={field}
+                />
+              </div>
+            </div>
+            <Button type="submit" className={pillPrimary} disabled={busy || !name.trim() || name.trim() === bot.name}>
+              Save name
+            </Button>
+          </form>
+        </Card>
 
         <Card title="Hermes connection" icon={<PlugZap className="size-4" />}>
           <form onSubmit={save} className="space-y-4">

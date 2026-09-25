@@ -4,6 +4,7 @@ import remarkGfm from 'remark-gfm';
 import type { ToolChip } from '@/chat/reducer';
 import { Spinner } from '@/components/ui/spinner';
 import type { Message } from '@/lib/api';
+import { useBotName } from '@/lib/botName';
 import { cn } from '@/lib/utils';
 
 const bubble = 'max-w-[85%] rounded-3xl px-4.5 py-3 text-[17px] leading-snug';
@@ -16,10 +17,10 @@ function Markdownish({ text }: { text: string }) {
   );
 }
 
-export function MessageBubble({ message }: { message: Message }) {
+export function MessageBubble({ message, animate = false }: { message: Message; animate?: boolean }) {
   if (message.role === 'user') {
     return (
-      <div className="flex justify-end">
+      <div className={cn('flex origin-bottom-right justify-end', animate && 'animate-pop')}>
         <div className={cn(bubble, 'whitespace-pre-wrap bg-bubble-user text-bubble-user-foreground')}>
           {message.content}
         </div>
@@ -27,7 +28,7 @@ export function MessageBubble({ message }: { message: Message }) {
     );
   }
   return (
-    <div className="flex flex-col items-start gap-1.5">
+    <div className={cn('flex origin-bottom-left flex-col items-start gap-1.5', animate && 'animate-pop')}>
       {message.source === 'cron' && (
         <span className="flex items-center gap-1 px-2 text-xs font-medium text-muted-foreground">
           <Clock className="size-3.5" /> Scheduled · {message.cronJob}
@@ -47,9 +48,10 @@ export function MessageBubble({ message }: { message: Message }) {
 }
 
 export function TypingDots() {
+  const { name } = useBotName();
   return (
-    <div className="flex">
-      <div className="flex items-center gap-1.5 rounded-full bg-bubble-assistant px-4 py-3.5" aria-label="Hermik is typing">
+    <div className="flex origin-bottom-left animate-pop">
+      <div className="flex items-center gap-1.5 rounded-full bg-bubble-assistant px-4 py-3.5" aria-label={`${name} is typing`}>
         {[0, 150, 300].map((delay) => (
           <span
             key={delay}
@@ -64,7 +66,7 @@ export function TypingDots() {
 
 function ToolCard({ tool }: { tool: ToolChip }) {
   return (
-    <div className="flex w-full max-w-[85%] items-center gap-3 rounded-3xl bg-bubble-assistant p-3">
+    <div className="flex w-full max-w-[85%] origin-bottom-left animate-pop items-center gap-3 rounded-3xl bg-bubble-assistant p-3">
       <div className="grid size-11 shrink-0 place-items-center rounded-2xl bg-surface text-xl">
         {tool.emoji ?? <Wrench className="size-5 text-brand-from" />}
       </div>
@@ -86,7 +88,7 @@ export function StreamingBubble({ text, tools }: { text: string; tools: ToolChip
         <ToolCard key={t.id} tool={t} />
       ))}
       {text ? (
-        <div className={cn(bubble, 'bg-bubble-assistant')}>
+        <div className={cn(bubble, 'origin-bottom-left animate-pop bg-bubble-assistant')}>
           <Markdownish text={text} />
         </div>
       ) : (

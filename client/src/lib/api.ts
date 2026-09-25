@@ -24,6 +24,7 @@ export interface SettingsView {
   apiKeySet: boolean;
   apiKeyLast4: string | null;
   keySource: 'settings' | 'env';
+  botName: string;
 }
 
 export type TestResult = { ok: true; models: string[] } | { ok: false; error: string };
@@ -62,7 +63,7 @@ export const api = {
   messages: () => request<{ messages: Message[]; busy: boolean }>('/messages'),
   stopChat: () => request<{ stopped: boolean }>('/chat/stop', json('POST')),
   getSettings: () => request<SettingsView>('/settings'),
-  saveSettings: (s: { hermesUrl?: string; hermesApiKey?: string }) => request<SettingsView>('/settings', json('PUT', s)),
+  saveSettings: (s: { hermesUrl?: string; hermesApiKey?: string; botName?: string }) => request<SettingsView>('/settings', json('PUT', s)),
   resetSettings: () => request<SettingsView>('/settings', json('DELETE')),
   testConnection: () => request<TestResult>('/settings/test', json('POST')),
   vapidKey: () => request<{ publicKey: string }>('/push/vapid-public-key').then((r) => r.publicKey),

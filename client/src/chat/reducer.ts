@@ -14,6 +14,8 @@ export interface ChatState {
   sending: boolean;
   remoteBusy: boolean;
   error: string | null;
+  /** History has been fetched at least once. */
+  loaded: boolean;
 }
 
 export type ChatAction =
@@ -33,14 +35,20 @@ export const initialChatState: ChatState = {
   sending: false,
   remoteBusy: false,
   error: null,
+  loaded: false,
 };
+
+/** Fresh conversation: show the big greeting instead of the header badge. */
+export function isEmptyChat(s: ChatState): boolean {
+  return s.loaded && s.messages.length === 0 && !s.sending && !s.streaming && !s.remoteBusy;
+}
 
 const withoutOptimistic = (messages: Message[]) => messages.filter((m) => m.id > 0);
 
 export function chatReducer(state: ChatState, action: ChatAction): ChatState {
   switch (action.type) {
     case 'loaded':
-      return { ...state, messages: action.messages, remoteBusy: action.busy };
+      return { ...state, messages: action.messages, remoteBusy: action.busy, loaded: true };
     case 'send':
       return {
         ...state,

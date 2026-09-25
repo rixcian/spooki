@@ -1,16 +1,52 @@
 import { Menu, RotateCw } from 'lucide-react';
 import { useEffect, useRef } from 'react';
+import { isEmptyChat } from '@/chat/reducer';
 import { useChat } from '@/chat/useChat';
 import { Composer } from '@/components/Composer';
 import { FloatingButton, pillSecondary } from '@/components/FloatingButton';
 import { AgentBadge, Mascot } from '@/components/Mascot';
 import { MessageBubble, StreamingBubble, TypingDots, streamingStatus } from '@/components/MessageBubble';
 import { Button } from '@/components/ui/button';
+import { useBotName } from '@/lib/botName';
+import { cn } from '@/lib/utils';
+
+// Big greeting for a fresh chat. On the first message it floats up and shrinks away
+// while the header badge pops in, so the avatar seems to move into the header.
+function Greeting({ visible }: { visible: boolean }) {
+  return (
+    <div
+      aria-hidden={!visible}
+      className={cn(
+        'pointer-events-none absolute inset-x-0 top-[18%] flex flex-col items-center gap-3 px-6 text-center transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]',
+        visible ? 'translate-y-0 scale-100 opacity-100' : '-translate-y-40 scale-50 opacity-0',
+      )}
+    >
+      <div className={cn('size-28 overflow-hidden rounded-full bg-white shadow-soft', visible && 'animate-bob')}>
+        <Mascot className="size-28" />
+      </div>
+      <p
+        className={cn(
+          'text-2xl font-semibold tracking-tight transition-all delay-75 duration-500',
+          visible ? 'translate-y-0 opacity-100' : '-translate-y-6 opacity-0',
+        )}
+      >
+        What can I take off your plate?
+      </p>
+      <p className={cn('text-muted-foreground transition-all delay-100 duration-500', visible ? 'opacity-100' : 'opacity-0')}>
+        Ask me anything. Scheduled updates show up here too.
+      </p>
+    </div>
+  );
+}
 
 export function ChatScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
   const { state, send, retry, stop } = useChat();
+  const { name } = useBotName();
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrolledOnce = useRef(false);
+  // Messages at or after this index arrived while the screen was open and get a pop-in.
+  const firstNew = useRef<number | null>(null);
+  if (state.loaded && firstNew.current === null) firstNew.current = state.messages.length;
 
   useEffect(() => {
     if (state.messages.length === 0) return;
@@ -19,6 +55,7 @@ export function ChatScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
     scrolledOnce.current = true;
   }, [state.messages.length, state.streaming?.text, state.streaming?.tools.length, state.remoteBusy]);
 
+  const empty = isEmptyChat(state);
   const last = state.messages.at(-1);
   const canRetry = !state.sending && !state.remoteBusy && last?.role === 'assistant' && last.status === 'error';
   const waiting = !state.sending && state.remoteBusy;
@@ -31,36 +68,46 @@ export function ChatScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
   return (
     <div className="flex h-dvh flex-col">
       <header className="pointer-events-none relative z-10 px-4 pt-[max(env(safe-area-inset-top),0.75rem)] pb-2">
-        <div className="absolute inset-0 -bottom-6 bg-gradient-to-b from-canvas via-canvas/90 to-transparent" />
-        <div className="relative mx-auto flex max-w-2xl items-start justify-center">
+        <div
+          className={cn(
+            'absolute inset-0 -bottom-6 bg-gradient-to-b from-canvas via-canvas/90 to-transparent transition-opacity duration-500',
+            empty && 'opacity-0',
+          )}
+        />
+        <div className="relative mx-auto flex min-h-[5.5rem] max-w-2xl items-start justify-center">
           <FloatingButton aria-label="Settings" onClick={onOpenSettings} className="pointer-events-auto absolute top-1 left-0">
             <Menu className="size-5" />
           </FloatingButton>
-          <AgentBadge status={status} />
+          <AgentBadge status={status} hidden={!state.loaded || empty} />
         </div>
       </header>
 
-      <main className="-mt-4 flex-1 overflow-y-auto px-4 pt-6 pb-4">
+      <main className="relative -mt-4 flex-1 overflow-y-auto px-4 pt-6 pb-4">
+        <Greeting visible={empty} />
         <div className="mx-auto flex max-w-2xl flex-col gap-3">
-          {state.messages.length === 0 && !state.sending && (
-            <div className="flex flex-col items-center gap-3 pt-16 text-center">
-              <Mascot className="size-28 shadow-soft" />
-              <p className="text-2xl font-semibold tracking-tight">What can I take off your plate?</p>
-              <p className="text-muted-foreground">Ask me anything. Scheduled updates show up here too.</p>
-            </div>
-          )}
-          {state.messages.map((m) => (
-            <MessageBubble key={m.id} message={m} />
+          {state.messages.map((m, i) => (
+            // Index keys: the list only grows at the end, and an optimistic message is replaced
+            // in place by its saved copy without re-mounting (no second pop).
+            <MessageBubble
+              key={i}
+              message={m}
+              animate={
+                firstNew.current !== null &&
+                i >= firstNew.current &&
+                // A finished chat reply replaces the streaming bubble that already popped in.
+                !(m.role === 'assistant' && m.source === 'chat')
+              }
+            />
           ))}
           {state.streaming && <StreamingBubble text={state.streaming.text} tools={state.streaming.tools} />}
           {waiting && (
             <div className="flex flex-col items-start gap-1.5">
               <TypingDots />
-              <p className="px-2 text-sm text-muted-foreground">Hermik is still working — you&apos;ll get a notification.</p>
+              <p className="px-2 text-sm text-muted-foreground">{name} is still working — you&apos;ll get a notification.</p>
             </div>
           )}
           {canRetry && (
-            <div>
+            <div className="origin-left animate-pop">
               <Button className={`${pillSecondary} h-10 px-4 sm:h-10`} onClick={retry}>
                 <RotateCw /> Retry
               </Button>
