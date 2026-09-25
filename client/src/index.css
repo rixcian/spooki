@@ -338,14 +338,18 @@
   .stream-word, .stream-caret { animation: none; }
 }
 
-/* Messages dissolve into the background as they scroll up under the floating header. */
-@utility fade-top {
+/* Messages dissolve into the background under the floating header and above the composer.
+   --composer-h is set from the composer's measured height. */
+@utility fade-edges {
   --fade-start: max(env(safe-area-inset-top), 0.75rem);
+  --fade-end: calc(100% - var(--composer-h, 5rem));
   --fade-mask: linear-gradient(
     to bottom,
     transparent 0,
     transparent var(--fade-start),
-    black calc(var(--fade-start) + 6rem)
+    black calc(var(--fade-start) + 6rem),
+    black calc(var(--fade-end) - 2.5rem),
+    transparent calc(var(--fade-end) + 1.5rem)
   );
   -webkit-mask-image: var(--fade-mask);
   mask-image: var(--fade-mask);

@@ -1,5 +1,5 @@
 import { Menu, RotateCw } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { isEmptyChat } from '@/chat/reducer';
 import { useChat } from '@/chat/useChat';
 import { Composer } from '@/components/Composer';
@@ -43,17 +43,28 @@ export function ChatScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
   const { state, send, retry, stop } = useChat();
   const { name } = useBotName();
   const bottomRef = useRef<HTMLDivElement>(null);
+  const composerRef = useRef<HTMLDivElement>(null);
+  const [composerH, setComposerH] = useState(80);
   const scrolledOnce = useRef(false);
   // Messages at or after this index arrived while the screen was open and get a pop-in.
   const firstNew = useRef<number | null>(null);
   if (state.loaded && firstNew.current === null) firstNew.current = state.messages.length;
+
+  // The composer floats over the list and grows with its text; keep the fade and spacer in sync.
+  useEffect(() => {
+    const el = composerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setComposerH(el.offsetHeight));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   useEffect(() => {
     if (state.messages.length === 0) return;
     // Jump on first load, glide afterwards.
     bottomRef.current?.scrollIntoView({ block: 'end', behavior: scrolledOnce.current ? 'smooth' : 'auto' });
     scrolledOnce.current = true;
-  }, [state.messages.length, state.streaming?.text, state.streaming?.tools.length, state.remoteBusy]);
+  }, [state.messages.length, state.streaming?.text, state.streaming?.tools.length, state.remoteBusy, composerH]);
 
   const empty = isEmptyChat(state);
   const last = state.messages.at(-1);
@@ -77,7 +88,10 @@ export function ChatScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
         </div>
       </header>
 
-      <main className="fade-top relative flex-1 overflow-y-auto px-4 pt-[calc(max(env(safe-area-inset-top),0.75rem)+6.5rem)] pb-4">
+      <main
+        className="fade-edges relative flex-1 overflow-y-auto px-4 pt-[calc(max(env(safe-area-inset-top),0.75rem)+6.5rem)]"
+        style={{ '--composer-h': `${composerH}px` } as CSSProperties}
+      >
         <Greeting visible={empty} />
         <div className="mx-auto flex max-w-2xl flex-col gap-3">
           {state.messages.map((m, i) => (
@@ -113,11 +127,15 @@ export function ChatScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
               {state.error}
             </p>
           )}
-          <div ref={bottomRef} />
+          {/* Spacer: the floating composer plus the bottom fade (2.5rem in .fade-edges), so the
+              newest message rests fully visible above it. */}
+          <div ref={bottomRef} aria-hidden style={{ height: `calc(${composerH}px + 2.5rem)` }} className="shrink-0" />
         </div>
       </main>
 
-      <Composer busy={state.sending || state.remoteBusy} onSend={send} onStop={() => void stop()} />
+      <div ref={composerRef} className="absolute inset-x-0 bottom-0 z-10">
+        <Composer busy={state.sending || state.remoteBusy} onSend={send} onStop={() => void stop()} />
+      </div>
     </div>
   );
 }
