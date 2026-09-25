@@ -77,7 +77,7 @@ export function ChatScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
         </div>
       </header>
 
-      <main className="relative flex-1 overflow-y-auto px-4 pt-[calc(max(env(safe-area-inset-top),0.75rem)+6.5rem)] pb-4">
+      <main className="fade-top relative flex-1 overflow-y-auto px-4 pt-[calc(max(env(safe-area-inset-top),0.75rem)+6.5rem)] pb-4">
         <Greeting visible={empty} />
         <div className="mx-auto flex max-w-2xl flex-col gap-3">
           {state.messages.map((m, i) => (

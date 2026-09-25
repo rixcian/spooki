@@ -337,3 +337,16 @@
 @media (prefers-reduced-motion: reduce) {
   .stream-word, .stream-caret { animation: none; }
 }
+
+/* Messages dissolve into the background as they scroll up under the floating header. */
+@utility fade-top {
+  --fade-start: max(env(safe-area-inset-top), 0.75rem);
+  --fade-mask: linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent var(--fade-start),
+    black calc(var(--fade-start) + 6rem)
+  );
+  -webkit-mask-image: var(--fade-mask);
+  mask-image: var(--fade-mask);
+}
