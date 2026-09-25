@@ -2,6 +2,7 @@ import { Check, Clock, Wrench } from 'lucide-react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import type { ToolChip } from '@/chat/reducer';
+import { rehypeStream } from '@/chat/rehypeStream';
 import { Spinner } from '@/components/ui/spinner';
 import type { Message } from '@/lib/api';
 import { useBotName } from '@/lib/botName';
@@ -9,10 +10,14 @@ import { cn } from '@/lib/utils';
 
 const bubble = 'max-w-[85%] rounded-3xl px-4.5 py-3 text-[17px] leading-snug';
 
-function Markdownish({ text }: { text: string }) {
+const streamPlugins = [rehypeStream];
+
+function Markdownish({ text, streaming = false }: { text: string; streaming?: boolean }) {
   return (
     <div className="prose max-w-none text-[17px] leading-snug break-words text-foreground dark:prose-invert prose-p:my-0 prose-p:[&+*]:mt-3 prose-pre:overflow-x-auto prose-pre:rounded-2xl prose-a:text-brand-from prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5 prose-headings:my-2">
-      <Markdown remarkPlugins={[remarkGfm]}>{text}</Markdown>
+      <Markdown remarkPlugins={[remarkGfm]} rehypePlugins={streaming ? streamPlugins : undefined}>
+        {text}
+      </Markdown>
     </div>
   );
 }
@@ -89,7 +94,7 @@ export function StreamingBubble({ text, tools }: { text: string; tools: ToolChip
       ))}
       {text ? (
         <div className={cn(bubble, 'origin-bottom-left animate-pop bg-bubble-assistant')}>
-          <Markdownish text={text} />
+          <Markdownish text={text} streaming />
         </div>
       ) : (
         <TypingDots />

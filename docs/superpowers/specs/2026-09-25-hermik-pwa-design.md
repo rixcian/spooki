@@ -153,6 +153,10 @@ names, logos or artwork.
   light grey on the left; user is light blue on the right. No per-message
   avatars.
 - **Typing:** a small grey bubble with three bouncing dots.
+- **Streaming text:** each new word drifts in from a soft blur (≈0.45s),
+  and a small glowing brand-gradient dot bobs at the end of the text until
+  the reply finishes. Code blocks don't animate. Respects
+  `prefers-reduced-motion`.
 - **Tools:** an activity card inside the reply: icon tile, tool name and
   its label (e.g. "web_search · cats"), with a spinner until completed.
 - **Cron messages:** a small "Scheduled · <job>" caption above the bubble.
