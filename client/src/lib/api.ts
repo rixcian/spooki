@@ -60,6 +60,7 @@ export const api = {
   login: (password: string) => request('/auth/login', json('POST', { password })),
   logout: () => request('/auth/logout', json('POST')),
   messages: () => request<{ messages: Message[]; busy: boolean }>('/messages'),
+  stopChat: () => request<{ stopped: boolean }>('/chat/stop', json('POST')),
   getSettings: () => request<SettingsView>('/settings'),
   saveSettings: (s: { hermesUrl?: string; hermesApiKey?: string }) => request<SettingsView>('/settings', json('PUT', s)),
   resetSettings: () => request<SettingsView>('/settings', json('DELETE')),

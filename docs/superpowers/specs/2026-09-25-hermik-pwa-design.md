@@ -147,8 +147,19 @@ names, logos or artwork.
   its label (e.g. "web_search · cats"), with a spinner until completed.
 - **Cron messages:** a small "Scheduled · <job>" caption above the bubble.
 - **Errors:** the bubble plus a pill **Retry** button.
-- **Composer:** a floating white pill ("Message"), with a round blue
-  gradient send button that appears once there is text.
+- **Composer:** a floating white rounded box: **+** on the left, the
+  "Message" field, then a **mic** and a round **send** button (pale when
+  empty, blue gradient with text). While Hermik is working, send becomes a
+  dark round **stop** button with a square.
+  - **+** opens a menu (Photo library, Take photo, File), all disabled with
+    a "Soon" badge. Attachments are still out of scope; this is design only.
+  - **Mic** dictates into the field using the browser's Web Speech API
+    (`webkitSpeechRecognition`, language from `navigator.language`). It is
+    hidden when the API is missing; errors show briefly above the box.
+  - **Stop** calls `POST /api/chat/stop`. The server aborts its Hermes
+    request, which makes Hermes interrupt the agent, and saves the partial
+    reply as complete with a `_Stopped_` note. No push is sent for a
+    stopped reply.
 - **Buttons:** primary actions are blue gradient pills; secondary are
   light grey pills.
 - **Login:** centered avatar, a friendly heading, pill password field and

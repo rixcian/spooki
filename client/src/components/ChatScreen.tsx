@@ -8,7 +8,7 @@ import { MessageBubble, StreamingBubble, TypingDots, streamingStatus } from '@/c
 import { Button } from '@/components/ui/button';
 
 export function ChatScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
-  const { state, send, retry } = useChat();
+  const { state, send, retry, stop } = useChat();
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrolledOnce = useRef(false);
 
@@ -75,7 +75,7 @@ export function ChatScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
         </div>
       </main>
 
-      <Composer disabled={state.sending || state.remoteBusy} onSend={send} />
+      <Composer busy={state.sending || state.remoteBusy} onSend={send} onStop={() => void stop()} />
     </div>
   );
 }

@@ -76,5 +76,11 @@ export function useChat() {
     void stream('/api/chat/retry', {}, true);
   }, [stream]);
 
-  return { state, send, retry };
+  // The open stream (if any) then receives `done` with the partial reply.
+  const stop = useCallback(async () => {
+    await api.stopChat().catch(() => {});
+    if (!sendingRef.current) void reload();
+  }, [reload]);
+
+  return { state, send, retry, stop };
 }
