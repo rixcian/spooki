@@ -66,14 +66,9 @@ export function ChatScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
       : null;
 
   return (
-    <div className="flex h-dvh flex-col">
-      <header className="pointer-events-none relative z-10 px-4 pt-[max(env(safe-area-inset-top),0.75rem)] pb-2">
-        <div
-          className={cn(
-            'absolute inset-0 -bottom-6 bg-gradient-to-b from-canvas via-canvas/90 to-transparent transition-opacity duration-500',
-            empty && 'opacity-0',
-          )}
-        />
+    <div className="relative flex h-dvh flex-col">
+      {/* Floats over the messages, which scroll underneath it. */}
+      <header className="pointer-events-none absolute inset-x-0 top-0 z-10 px-4 pt-[max(env(safe-area-inset-top),0.75rem)]">
         <div className="relative mx-auto flex min-h-[5.5rem] max-w-2xl items-start justify-center">
           <FloatingButton aria-label="Settings" onClick={onOpenSettings} className="pointer-events-auto absolute top-1 left-0">
             <Menu className="size-5" />
@@ -82,7 +77,7 @@ export function ChatScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
         </div>
       </header>
 
-      <main className="relative -mt-4 flex-1 overflow-y-auto px-4 pt-6 pb-4">
+      <main className="relative flex-1 overflow-y-auto px-4 pt-[calc(max(env(safe-area-inset-top),0.75rem)+6.5rem)] pb-4">
         <Greeting visible={empty} />
         <div className="mx-auto flex max-w-2xl flex-col gap-3">
           {state.messages.map((m, i) => (
