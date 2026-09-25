@@ -73,6 +73,22 @@ describe('streamChat', () => {
     expect(events).toEqual([{ type: 'delta', text: 'partial' }, { type: 'error', message: 'model exploded' }]);
   });
 
+  it('aborting the signal ends the stream (Hermes interrupts the agent on disconnect)', async () => {
+    const fake = await startFakeHermes((_req, res) => {
+      res.writeHead(200, { 'content-type': 'text/event-stream' });
+      res.write(chunk('working'));
+    });
+    close = fake.close;
+    const controller = new AbortController();
+    const events: HermesEvent[] = [];
+    for await (const e of streamChat({ url: fake.url, apiKey: 'k' }, [], controller.signal)) {
+      events.push(e);
+      if (e.type === 'delta') controller.abort();
+    }
+    expect(events[0]).toEqual({ type: 'delta', text: 'working' });
+    expect(events.at(-1)?.type).toBe('error');
+  });
+
   it('reports HTTP errors', async () => {
     const fake = await startFakeHermes((_req, res) => {
       res.writeHead(401, { 'content-type': 'application/json' });

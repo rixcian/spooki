@@ -87,6 +87,41 @@ describe('ChatRunner', () => {
     expect(() => runner.retry(() => {})).toThrow(NothingToRetryError);
   });
 
+  it('stop() interrupts Hermes, keeps the partial text and skips the push', async () => {
+    const push = fakePush();
+    let seenSignal: AbortSignal | undefined;
+    const runner = new ChatRunner({
+      messages, push, historyWindow: 40, getTarget: () => ({ url: '', apiKey: '' }), log: () => {},
+      stream: async function* (_t, _m, signal) {
+        seenSignal = signal;
+        yield { type: 'delta', text: 'Half an ans' };
+        await new Promise(() => {}); // Hermes keeps working until interrupted
+      },
+    });
+    const events: ChatStreamEvent[] = [];
+    const handle = runner.send('q', (e) => events.push(e));
+    handle.detach();
+    await new Promise((r) => setTimeout(r, 0));
+    expect(runner.stop()).toBe(true);
+    await handle.finished;
+    expect(seenSignal?.aborted).toBe(true);
+    expect(messages.last()).toMatchObject({ role: 'assistant', status: 'complete', content: 'Half an ans\n\n_Stopped_' });
+    expect(runner.busy).toBe(false);
+    expect(push.sent).toEqual([]);
+  });
+
+  it('stop() emits done to an attached listener; returns false when idle', async () => {
+    const gate = deferred();
+    const { runner } = makeRunner([{ type: 'done' }], gate.promise);
+    expect(runner.stop()).toBe(false);
+    const events: ChatStreamEvent[] = [];
+    const handle = runner.send('q', (e) => events.push(e));
+    runner.stop();
+    await handle.finished;
+    expect(events.map((e) => e.type)).toEqual(['user', 'done']);
+    expect(messages.last()?.content).toBe('_Stopped_');
+  });
+
   it('treats a throwing stream as an error', async () => {
     const push = fakePush();
     const runner = new ChatRunner({

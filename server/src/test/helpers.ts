@@ -10,9 +10,10 @@ export function deferred<T = void>() {
 
 export function fakeStream(events: HermesEvent[], gate?: Promise<void>) {
   const calls: { target: HermesTarget; messages: HermesMessage[] }[] = [];
-  const fn: StreamChat = async function* (target, messages) {
+  const fn: StreamChat = async function* (target, messages, signal) {
     calls.push({ target, messages });
-    if (gate) await gate;
+    if (gate) await Promise.race([gate, new Promise((r) => signal?.addEventListener('abort', r))]);
+    if (signal?.aborted) return;
     for (const e of events) yield e;
   };
   return Object.assign(fn, { calls });

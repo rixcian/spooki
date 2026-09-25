@@ -38,13 +38,23 @@ export interface ChatRunnerDeps {
   log?: (...a: unknown[]) => void;
 }
 
+export const STOPPED_NOTE = '_Stopped_';
+
 export class ChatRunner {
   private running = false;
+  private controller: AbortController | null = null;
 
   constructor(private d: ChatRunnerDeps) {}
 
   get busy(): boolean {
     return this.running;
+  }
+
+  /** Interrupts the running reply. The partial text is kept. Returns false when idle. */
+  stop(): boolean {
+    if (!this.running || !this.controller) return false;
+    this.controller.abort();
+    return true;
   }
 
   send(text: string, listener: Listener): RunHandle {
@@ -65,6 +75,9 @@ export class ChatRunner {
   // agent when its caller disconnects, and iOS drops PWA connections whenever the app is hidden.
   private run(listener: Listener, initial: ChatStreamEvent[]): RunHandle {
     this.running = true;
+    const controller = new AbortController();
+    this.controller = controller;
+    const { signal } = controller;
     let attached: Listener | null = listener;
     const log = this.d.log ?? console.error;
     const emit = (e: ChatStreamEvent) => {
@@ -81,7 +94,21 @@ export class ChatRunner {
       let error: string | null = null;
       try {
         const history = buildHistory(this.d.messages.list(this.d.historyWindow));
-        for await (const ev of this.d.stream(this.d.getTarget(), history)) {
+        const events = this.d.stream(this.d.getTarget(), history, signal);
+        // Race every read against stop(), so a stream that ignores the signal can't hang us.
+        const stopped = new Promise<'stopped'>((resolve) => {
+          if (signal.aborted) resolve('stopped');
+          signal.addEventListener('abort', () => resolve('stopped'), { once: true });
+        });
+        while (true) {
+          const next = await Promise.race([events.next(), stopped]);
+          if (next === 'stopped') {
+            void events.return(undefined).catch(() => {});
+            break;
+          }
+          if (next.done) break;
+          const ev = next.value;
+          if (signal.aborted) break;
           if (ev.type === 'delta') {
             text += ev.text;
             emit(ev);
@@ -97,8 +124,14 @@ export class ChatRunner {
       } catch (err) {
         error = err instanceof Error ? err.message : String(err);
       }
+      const wasStopped = signal.aborted;
+      if (wasStopped) error = null;
 
-      const content = error
+      const content = wasStopped
+        ? text
+          ? `${text}\n\n${STOPPED_NOTE}`
+          : STOPPED_NOTE
+        : error
         ? text
           ? `${text}\n\n---\n⚠️ ${error}`
           : `⚠️ ${error}`
@@ -110,9 +143,10 @@ export class ChatRunner {
         status: error ? 'error' : 'complete',
       });
       this.running = false;
+      this.controller = null;
       emit(error ? { type: 'error', error, message: saved } : { type: 'done', message: saved });
 
-      if (!attached) {
+      if (!attached && !wasStopped) {
         await this.d.push
           .sendToAll({ title: 'Hermik', body: previewText(saved.content), url: '/' })
           .catch((err) => log('chat: push failed', err));

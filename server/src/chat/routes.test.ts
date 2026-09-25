@@ -47,6 +47,17 @@ describe('chat routes', () => {
     expect((await post(app, '/chat', {})).status).toBe(400);
   });
 
+  it('POST /chat/stop stops a running reply', async () => {
+    const gate = deferred();
+    const { app, runner } = makeApp([{ type: 'done' }], gate.promise);
+    expect(await (await post(app, '/chat/stop', {})).json()).toEqual({ stopped: false });
+    const res = await post(app, '/chat', { text: 'hi' });
+    expect(await (await post(app, '/chat/stop', {})).json()).toEqual({ stopped: true });
+    const frames = parseSseText(await res.text());
+    expect(frames.map((f) => f.event)).toEqual(['user', 'done']);
+    expect(runner.busy).toBe(false);
+  });
+
   it('returns 409 while a reply is in progress', async () => {
     const gate = deferred();
     const { app, runner } = makeApp([{ type: 'done' }], gate.promise);

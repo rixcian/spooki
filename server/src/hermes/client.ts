@@ -12,7 +12,12 @@ export type HermesEvent =
   | { type: 'done' }
   | { type: 'error'; message: string };
 
-export type StreamChat = (target: HermesTarget, messages: HermesMessage[]) => AsyncGenerator<HermesEvent>;
+// Aborting `signal` closes the HTTP request, which makes Hermes interrupt the agent.
+export type StreamChat = (
+  target: HermesTarget,
+  messages: HermesMessage[],
+  signal?: AbortSignal,
+) => AsyncGenerator<HermesEvent>;
 
 export type ListModelsResult = { ok: true; models: string[] } | { ok: false; error: string };
 export type ListModels = (target: HermesTarget) => Promise<ListModelsResult>;
@@ -29,13 +34,14 @@ function safeJson(text: string): any {
   }
 }
 
-export const streamChat: StreamChat = async function* (target, messages) {
+export const streamChat: StreamChat = async function* (target, messages, signal) {
   let res: Response;
   try {
     res = await fetch(`${baseUrl(target.url)}/v1/chat/completions`, {
       method: 'POST',
       headers: { 'content-type': 'application/json', authorization: `Bearer ${target.apiKey}` },
       body: JSON.stringify({ model: 'hermes-agent', messages, stream: true }),
+      signal,
     });
   } catch (err) {
     yield { type: 'error', message: `Cannot reach Hermes: ${errMsg(err)}` };

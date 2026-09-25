@@ -62,5 +62,7 @@ export function chatRoutes({ messages, runner }: { messages: MessageStore; runne
 
   app.post('/chat/retry', (c) => sse(c, (listener) => runner.retry(listener)));
 
+  app.post('/chat/stop', (c) => c.json({ stopped: runner.stop() }));
+
   return app;
 }
