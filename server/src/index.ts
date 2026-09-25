@@ -16,7 +16,7 @@ import { listModels, streamChat } from './hermes/client.js';
 import { createPushSender } from './push/sender.js';
 import { SubscriptionStore } from './push/subscriptions.js';
 import { loadOrCreateVapid } from './push/vapid.js';
-import { SettingsStore, effectiveHermes } from './settings/store.js';
+import { SettingsStore, botName, effectiveHermes } from './settings/store.js';
 
 async function main() {
   const config = loadConfig(process.env);
@@ -36,6 +36,7 @@ async function main() {
     stream: streamChat,
     historyWindow: config.historyWindow,
     getTarget: () => effectiveHermes(settings, config),
+    botName: () => botName(settings),
   });
 
   const app = createApp({
@@ -56,7 +57,7 @@ async function main() {
   app.use('/*', serveStatic({ root }));
   app.get('*', serveStatic({ path: join(root, 'index.html') })); // SPA fallback
 
-  await startCronWatcher({ dir: config.cronOutputDir, seen, messages, push });
+  await startCronWatcher({ dir: config.cronOutputDir, seen, messages, push, botName: () => botName(settings) });
 
   serve({ fetch: app.fetch, port: config.port }, (info) => {
     console.log(`hermik listening on :${info.port}`);

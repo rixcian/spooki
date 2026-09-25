@@ -4,6 +4,9 @@ import type { HermesTarget } from '../hermes/client.js';
 
 export const HERMES_URL_KEY = 'hermes_url';
 export const HERMES_KEY_KEY = 'hermes_api_key';
+export const BOT_NAME_KEY = 'bot_name';
+export const DEFAULT_BOT_NAME = 'Hermik';
+export const MAX_BOT_NAME = 40;
 
 export class SettingsStore {
   constructor(private db: DB) {}
@@ -22,6 +25,10 @@ export class SettingsStore {
   delete(key: string): void {
     this.db.prepare(`DELETE FROM settings WHERE key = ?`).run(key);
   }
+}
+
+export function botName(settings: SettingsStore): string {
+  return settings.get(BOT_NAME_KEY) ?? DEFAULT_BOT_NAME;
 }
 
 export interface EffectiveHermes extends HermesTarget {

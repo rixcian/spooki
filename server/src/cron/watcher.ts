@@ -12,6 +12,9 @@ export interface CronDeps {
   seen: CronSeenStore;
   messages: MessageStore;
   push: PushSender;
+  botName?: () => string;
+  /** Full rescan interval: a safety net for missed fs events. */
+  rescanMs?: number;
   log?: (...a: unknown[]) => void;
 }
 
@@ -47,7 +50,7 @@ export async function processFile(d: CronDeps, absPath: string): Promise<void> {
 
   const message = d.messages.add({ role: 'assistant', source: 'cron', content: result.content, cronJob: result.jobName });
   await d.push
-    .sendToAll({ title: `Hermik · ${result.jobName}`, body: previewText(message.content), url: '/' })
+    .sendToAll({ title: `${d.botName?.() ?? 'Hermik'} · ${result.jobName}`, body: previewText(message.content), url: '/' })
     .catch((err) => log('cron: push failed', err));
 }
 
@@ -76,6 +79,16 @@ export async function initialScan(d: CronDeps): Promise<void> {
   for (const f of files) await processFile(d, f);
 }
 
+// Safety net for missed fs events. processFile dedupes via cron_seen, so this is cheap and safe.
+export function startRescan(d: CronDeps, everyMs: number): () => void {
+  const log = d.log ?? console.error;
+  const timer = setInterval(() => {
+    initialScan(d).catch((err) => log('cron: rescan failed', err));
+  }, everyMs);
+  timer.unref();
+  return () => clearInterval(timer);
+}
+
 export async function startCronWatcher(d: CronDeps): Promise<{ close(): Promise<void> }> {
   const log = d.log ?? console.error;
   if (!existsSync(d.dir)) {
@@ -93,5 +106,11 @@ export async function startCronWatcher(d: CronDeps): Promise<{ close(): Promise<
   });
   watcher.on('error', (err: unknown) => log('cron: watcher error', err));
   await new Promise<void>((resolve) => watcher.once('ready', () => resolve()));
-  return { close: () => watcher.close() };
+  const stopRescan = startRescan(d, d.rescanMs ?? 60_000);
+  return {
+    close: async () => {
+      stopRescan();
+      await watcher.close();
+    },
+  };
 }

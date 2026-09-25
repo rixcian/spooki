@@ -7,7 +7,7 @@ import { MessageStore } from '../chat/messages.js';
 import { fakePush, waitFor } from '../test/helpers.js';
 import { isCronOutputPath, parseCronFile } from './parse.js';
 import { CronSeenStore } from './seen.js';
-import { initialScan, processFile, startCronWatcher, type CronDeps } from './watcher.js';
+import { initialScan, processFile, startCronWatcher, startRescan, type CronDeps } from './watcher.js';
 
 const fixture = (name: string) => readFileSync(new URL(`./__fixtures__/${name}`, import.meta.url), 'utf8');
 
@@ -83,6 +83,12 @@ describe('cron watcher', () => {
     expect(deps.push.sent[0].title).toBe('Hermik · Morning briefing');
   });
 
+  it('titles cron pushes with the current bot name', async () => {
+    const abs = write('a1b2c3/2026-09-25_07-00-01.md', fixture('response.md'));
+    await processFile({ ...deps, botName: () => 'Mimi' }, abs);
+    expect(deps.push.sent[0].title).toBe('Mimi · Morning briefing');
+  });
+
   it('marks skipped files as seen without delivering', async () => {
     const abs = write('w1/2026-09-25_07-00-01.md', fixture('silent.md'));
     await processFile(deps, abs);
@@ -104,7 +110,19 @@ describe('cron watcher', () => {
     const watcher = await startCronWatcher(deps);
     closeWatcher = watcher.close;
     write('a1b2c3/2026-09-25_08-00-00.md', fixture('response.md'));
-    await waitFor(() => messages.list().length === 1);
+    await waitFor(() => messages.list().length === 1, 8000); // fs events can lag under load
+    expect(deps.push.sent).toHaveLength(1);
+  });
+
+  it('periodic rescan delivers files without any fs watcher', async () => {
+    await initialScan(deps); // sets the baseline, as on a first start
+    write('a1b2c3/2026-09-25_09-00-00.md', fixture('response.md'));
+    const stop = startRescan(deps, 20);
+    try {
+      await waitFor(() => messages.list().length === 1);
+    } finally {
+      stop();
+    }
     expect(deps.push.sent).toHaveLength(1);
   });
 

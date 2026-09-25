@@ -72,6 +72,18 @@ describe('ChatRunner', () => {
     expect(push.sent).toEqual([{ title: 'Hermik', body: 'Background answer', url: '/' }]);
   });
 
+  it('titles background pushes with the current bot name', async () => {
+    const push = fakePush();
+    const runner = new ChatRunner({
+      messages, push, historyWindow: 40, getTarget: () => ({ url: '', apiKey: '' }), log: () => {},
+      stream: fakeStream([{ type: 'delta', text: 'hi' }, { type: 'done' }]), botName: () => 'Mimi',
+    });
+    const handle = runner.send('q', () => {});
+    handle.detach();
+    await handle.finished;
+    expect(push.sent[0].title).toBe('Mimi');
+  });
+
   it('retry replaces a failed reply without duplicating the user message', async () => {
     messages.add({ role: 'user', source: 'chat', content: 'q' });
     messages.add({ role: 'assistant', source: 'chat', content: 'x', status: 'error' });

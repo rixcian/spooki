@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { openDb } from '../db.js';
 import type { HermesTarget } from '../hermes/client.js';
-import { SettingsStore, effectiveHermes } from './store.js';
+import { SettingsStore, botName, effectiveHermes } from './store.js';
 import { settingsRoutes } from './routes.js';
 
 const config = { hermesUrl: 'http://hermes:8642', hermesApiKey: 'env-key-1234' };
@@ -36,6 +36,7 @@ describe('settings routes', () => {
     const text = await res.text();
     expect(JSON.parse(text)).toEqual({
       hermesUrl: 'http://hermes:8642', urlSource: 'env', apiKeySet: true, apiKeyLast4: '1234', keySource: 'env',
+      botName: 'Hermik',
     });
     expect(text).not.toContain('env-key-1234');
   });
@@ -54,6 +55,19 @@ describe('settings routes', () => {
     expect(res.status).toBe(400);
     const ftp = await put({ hermesUrl: 'ftp://x' });
     expect(ftp.status).toBe(400);
+  });
+
+  it('PUT renames the bot; blank is ignored, too long is rejected', async () => {
+    expect(await (await put({ botName: '  Mimi  ' })).json()).toMatchObject({ botName: 'Mimi' });
+    expect(botName(settings)).toBe('Mimi');
+    expect(await (await put({ botName: '   ' })).json()).toMatchObject({ botName: 'Mimi' });
+    expect((await put({ botName: 'x'.repeat(41) })).status).toBe(400);
+  });
+
+  it('DELETE resets the connection but keeps the bot name', async () => {
+    await put({ botName: 'Mimi', hermesUrl: 'http://custom:9000' });
+    const res = await app.request('/', { method: 'DELETE' });
+    expect(await res.json()).toMatchObject({ urlSource: 'env', botName: 'Mimi' });
   });
 
   it('DELETE resets to env', async () => {

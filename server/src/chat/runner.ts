@@ -35,6 +35,7 @@ export interface ChatRunnerDeps {
   stream: StreamChat;
   push: PushSender;
   historyWindow: number;
+  botName?: () => string;
   log?: (...a: unknown[]) => void;
 }
 
@@ -148,7 +149,7 @@ export class ChatRunner {
 
       if (!attached && !wasStopped) {
         await this.d.push
-          .sendToAll({ title: 'Hermik', body: previewText(saved.content), url: '/' })
+          .sendToAll({ title: this.d.botName?.() ?? 'Hermik', body: previewText(saved.content), url: '/' })
           .catch((err) => log('chat: push failed', err));
       }
     })();
