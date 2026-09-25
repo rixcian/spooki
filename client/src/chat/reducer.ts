@@ -38,6 +38,22 @@ export const initialChatState: ChatState = {
   loaded: false,
 };
 
+export interface ChatSnapshot {
+  messages: Message[];
+  remoteBusy: boolean;
+}
+
+/** What survives leaving the chat screen (e.g. for Settings): saved history and whether a run is on. */
+export function snapshotChat(s: ChatState): ChatSnapshot | null {
+  if (!s.loaded) return null;
+  return { messages: withoutOptimistic(s.messages), remoteBusy: s.remoteBusy || s.sending };
+}
+
+/** Lets the chat reappear fully rendered; the mount-time reload then refreshes it. */
+export function restoreChat(snap: ChatSnapshot | null): ChatState {
+  return snap ? { ...initialChatState, ...snap, loaded: true } : initialChatState;
+}
+
 /** Fresh conversation: show the big greeting instead of the header badge. */
 export function isEmptyChat(s: ChatState): boolean {
   return s.loaded && s.messages.length === 0 && !s.sending && !s.streaming && !s.remoteBusy;

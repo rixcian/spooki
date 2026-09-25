@@ -21,7 +21,10 @@ function Greeting({ visible }: { visible: boolean }) {
         visible ? 'translate-y-0 scale-100 opacity-100' : '-translate-y-40 scale-50 opacity-0',
       )}
     >
-      <div className={cn('size-28 overflow-hidden rounded-full bg-white shadow-soft', visible && 'animate-bob')}>
+      <div
+        className={cn('size-28 overflow-hidden rounded-full bg-white shadow-soft', visible && 'animate-bob')}
+        style={visible ? { viewTransitionName: 'bot-avatar' } : undefined}
+      >
         <Mascot className="size-28" />
       </div>
       <p
@@ -106,7 +109,12 @@ export function ChatScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
       {/* Floats over the messages, which scroll underneath it. */}
       <header className="pointer-events-none absolute inset-x-0 top-0 z-10 px-4 pt-[max(env(safe-area-inset-top),0.75rem)]">
         <div className="relative mx-auto flex min-h-[5.5rem] max-w-2xl items-start justify-center">
-          <FloatingButton aria-label="Settings" onClick={onOpenSettings} className="pointer-events-auto absolute top-1 left-0">
+          <FloatingButton
+            aria-label="Settings"
+            onClick={onOpenSettings}
+            className="pointer-events-auto absolute top-1 left-0"
+            style={{ viewTransitionName: 'nav-button' }}
+          >
             <Menu className="size-5" />
           </FloatingButton>
           <AgentBadge status={status} hidden={!state.loaded || empty} />

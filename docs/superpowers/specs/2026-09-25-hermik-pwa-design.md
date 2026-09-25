@@ -189,6 +189,12 @@ names, logos or artwork.
   gradient button.
 - **Settings:** a large title with grouped white cards of rows, like the
   Muse "Goals" screen.
+- **Chat ⇄ Settings transition:** a View Transition (Safari 18+; instant
+  elsewhere or with Reduce Motion). Settings slides in from the menu's side
+  while the chat sinks back and blurs; the ☰ button spins into the ‹ back
+  button, and the avatar flies between the header and the Assistant card.
+  Back plays in reverse. The chat keeps a snapshot of its history while in
+  Settings so it reappears fully rendered.
 - **Font:** Figtree (friendly, rounded), self-hosted via Fontsource.
 
 ## Cron → chat

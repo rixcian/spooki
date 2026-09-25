@@ -89,7 +89,7 @@ export function SettingsScreen({ onBack, onLoggedOut }: { onBack: () => void; on
   return (
     <div className="min-h-dvh px-4 pt-[max(env(safe-area-inset-top),0.75rem)] pb-[max(env(safe-area-inset-bottom),1.5rem)]">
       <div className="mx-auto max-w-lg space-y-5">
-        <FloatingButton aria-label="Back" onClick={onBack} className="mt-1">
+        <FloatingButton aria-label="Back" onClick={onBack} className="mt-1" style={{ viewTransitionName: 'nav-button' }}>
           <ChevronLeft className="size-6" />
         </FloatingButton>
         <h1 className="px-1 text-3xl font-semibold tracking-tight">Settings</h1>
@@ -97,7 +97,10 @@ export function SettingsScreen({ onBack, onLoggedOut }: { onBack: () => void; on
         <Card title="Assistant" icon={<Smile className="size-4" />}>
           <form onSubmit={saveName} className="space-y-4">
             <div className="flex items-center gap-4">
-              <div className="size-16 shrink-0 overflow-hidden rounded-full bg-white shadow-soft">
+              <div
+                className="size-16 shrink-0 overflow-hidden rounded-full bg-white shadow-soft"
+                style={{ viewTransitionName: 'bot-avatar' }}
+              >
                 <Mascot className="size-16" />
               </div>
               <div className="min-w-0 flex-1 space-y-1.5">

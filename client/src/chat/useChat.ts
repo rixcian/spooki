@@ -1,12 +1,24 @@
 import { useCallback, useEffect, useReducer, useRef } from 'react';
 import { api } from '@/lib/api';
 import { postSse } from '@/lib/sse';
-import { chatReducer, initialChatState } from './reducer';
+import { chatReducer, restoreChat, snapshotChat, type ChatSnapshot } from './reducer';
 
 const BUSY_POLL_MS = 3000;
 
+// Kept across ChatScreen mounts so returning from Settings shows the chat instantly
+// (and the avatar can fly back into the header during the view transition).
+let snapshot: ChatSnapshot | null = null;
+
+export function clearChatSnapshot(): void {
+  snapshot = null;
+}
+
 export function useChat() {
-  const [state, dispatch] = useReducer(chatReducer, initialChatState);
+  const [state, dispatch] = useReducer(chatReducer, null, () => restoreChat(snapshot));
+
+  useEffect(() => {
+    snapshot = snapshotChat(state) ?? snapshot;
+  }, [state]);
   const sendingRef = useRef(false);
   sendingRef.current = state.sending;
 

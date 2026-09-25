@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { Message } from '@/lib/api';
-import { chatReducer, initialChatState, isEmptyChat, type ChatAction, type ChatState } from './reducer';
+import { chatReducer, initialChatState, isEmptyChat, restoreChat, snapshotChat, type ChatAction, type ChatState } from './reducer';
 
 const msg = (id: number, over: Partial<Message> = {}): Message => ({
   id, role: 'assistant', source: 'chat', content: `m${id}`, status: 'complete', cronJob: null, createdAt: '', ...over,
@@ -8,6 +8,23 @@ const msg = (id: number, over: Partial<Message> = {}): Message => ({
 
 const run = (...actions: ChatAction[]): ChatState =>
   actions.reduce(chatReducer, initialChatState);
+
+describe('chat snapshot', () => {
+  it('restores a loaded chat instantly, dropping optimistic and in-flight state', () => {
+    const s = run({ type: 'loaded', messages: [msg(1)], busy: false }, { type: 'send', text: 'hi' }, { type: 'delta', text: 'He' });
+    const restored = restoreChat(snapshotChat(s));
+    expect(restored.loaded).toBe(true);
+    expect(restored.messages.map((m) => m.id)).toEqual([1]);
+    expect(restored.streaming).toBeNull();
+    expect(restored.sending).toBe(false);
+    expect(restored.remoteBusy).toBe(true); // the server is still working; polling picks it up
+  });
+
+  it('has nothing to snapshot before the first load', () => {
+    expect(snapshotChat(initialChatState)).toBeNull();
+    expect(restoreChat(null)).toEqual(initialChatState);
+  });
+});
 
 describe('chatReducer', () => {
   it('loads history and remote busy flag', () => {
