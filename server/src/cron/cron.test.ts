@@ -80,7 +80,7 @@ describe('cron watcher', () => {
     expect(messages.list()).toHaveLength(1);
     expect(messages.list()[0]).toMatchObject({ role: 'assistant', source: 'cron', cronJob: 'Morning briefing' });
     expect(deps.push.sent).toHaveLength(1);
-    expect(deps.push.sent[0].title).toBe('Hermes · Morning briefing');
+    expect(deps.push.sent[0].title).toBe('Hermik · Morning briefing');
   });
 
   it('marks skipped files as seen without delivering', async () => {

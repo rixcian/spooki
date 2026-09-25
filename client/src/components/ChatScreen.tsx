@@ -10,9 +10,13 @@ import { Button } from '@/components/ui/button';
 export function ChatScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
   const { state, send, retry } = useChat();
   const bottomRef = useRef<HTMLDivElement>(null);
+  const scrolledOnce = useRef(false);
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ block: 'end', behavior: 'smooth' });
+    if (state.messages.length === 0) return;
+    // Jump on first load, glide afterwards.
+    bottomRef.current?.scrollIntoView({ block: 'end', behavior: scrolledOnce.current ? 'smooth' : 'auto' });
+    scrolledOnce.current = true;
   }, [state.messages.length, state.streaming?.text, state.streaming?.tools.length, state.remoteBusy]);
 
   const last = state.messages.at(-1);
@@ -40,7 +44,7 @@ export function ChatScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
         <div className="mx-auto flex max-w-2xl flex-col gap-3">
           {state.messages.length === 0 && !state.sending && (
             <div className="flex flex-col items-center gap-3 pt-16 text-center">
-              <Mascot className="size-20" />
+              <Mascot className="size-28 shadow-soft" />
               <p className="text-2xl font-semibold tracking-tight">What can I take off your plate?</p>
               <p className="text-muted-foreground">Ask me anything. Scheduled updates show up here too.</p>
             </div>
@@ -52,7 +56,7 @@ export function ChatScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
           {waiting && (
             <div className="flex flex-col items-start gap-1.5">
               <TypingDots />
-              <p className="px-2 text-sm text-muted-foreground">Hermes is still working — you&apos;ll get a notification.</p>
+              <p className="px-2 text-sm text-muted-foreground">Hermik is still working — you&apos;ll get a notification.</p>
             </div>
           )}
           {canRetry && (

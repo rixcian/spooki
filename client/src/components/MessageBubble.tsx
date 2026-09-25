@@ -49,7 +49,7 @@ export function MessageBubble({ message }: { message: Message }) {
 export function TypingDots() {
   return (
     <div className="flex">
-      <div className="flex items-center gap-1.5 rounded-full bg-bubble-assistant px-4 py-3.5" aria-label="Hermes is typing">
+      <div className="flex items-center gap-1.5 rounded-full bg-bubble-assistant px-4 py-3.5" aria-label="Hermik is typing">
         {[0, 150, 300].map((delay) => (
           <span
             key={delay}

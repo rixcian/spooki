@@ -134,8 +134,10 @@ names, logos or artwork.
 - **Canvas:** near-white background with a soft sky-blue gradient rising
   from the bottom edge. Dark mode uses deep navy with a faint blue glow.
 - **Header:** a floating round white button (soft shadow) top-left opens
-  Settings. Centered is an original cute mascot avatar with a white "Hermes"
-  name pill under it. While a reply runs, the pill shows a status line
+  Settings. Centered is the bot's avatar (the user's plush "Hermik"
+  character, `client/public/hermik-avatar.jpg`) with a white "Hermik" name pill
+  under it. The bot is called **Hermik** everywhere in the UI and in push
+  titles; "Hermes" only names the backend server. While a reply runs, the pill shows a status line
   ("Thinking…", or the running tool's label).
 - **Bubbles:** large rounded (≈24px) bubbles with ~17px text. Assistant is
   light grey on the left; user is light blue on the right. No per-message
@@ -149,7 +151,7 @@ names, logos or artwork.
   gradient send button that appears once there is text.
 - **Buttons:** primary actions are blue gradient pills; secondary are
   light grey pills.
-- **Login:** centered mascot, a friendly heading, pill password field and
+- **Login:** centered avatar, a friendly heading, pill password field and
   gradient button.
 - **Settings:** a large title with grouped white cards of rows, like the
   Muse "Goals" screen.

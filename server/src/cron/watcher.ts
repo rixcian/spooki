@@ -47,7 +47,7 @@ export async function processFile(d: CronDeps, absPath: string): Promise<void> {
 
   const message = d.messages.add({ role: 'assistant', source: 'cron', content: result.content, cronJob: result.jobName });
   await d.push
-    .sendToAll({ title: `Hermes · ${result.jobName}`, body: previewText(message.content), url: '/' })
+    .sendToAll({ title: `Hermik · ${result.jobName}`, body: previewText(message.content), url: '/' })
     .catch((err) => log('cron: push failed', err));
 }
 

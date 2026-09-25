@@ -2,7 +2,7 @@ self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', (event) => event.waitUntil(self.clients.claim()));
 
 self.addEventListener('push', (event) => {
-  let data = { title: 'Hermes', body: 'New message', url: '/' };
+  let data = { title: 'Hermik', body: 'New message', url: '/' };
   try {
     data = { ...data, ...event.data.json() };
   } catch {

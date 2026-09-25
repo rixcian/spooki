@@ -7,8 +7,8 @@ import { enablePush, pushStatus, type PushStatus } from '@/lib/push';
 
 const PUSH_TEXT: Record<PushStatus, string> = {
   enabled: 'Notifications are on.',
-  disabled: 'Get a ping when Hermes replies or a scheduled job finishes.',
-  denied: 'Notifications are blocked. Allow them in iOS Settings → Notifications → Hermes.',
+  disabled: 'Get a ping when Hermik replies or a scheduled job finishes.',
+  denied: 'Notifications are blocked. Allow them in iOS Settings → Notifications → Hermik.',
   'needs-install': 'Add Hermik to your Home Screen (Share → Add to Home Screen) to enable notifications.',
   unsupported: 'This browser does not support push notifications.',
 };

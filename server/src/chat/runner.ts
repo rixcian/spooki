@@ -114,7 +114,7 @@ export class ChatRunner {
 
       if (!attached) {
         await this.d.push
-          .sendToAll({ title: 'Hermes', body: previewText(saved.content), url: '/' })
+          .sendToAll({ title: 'Hermik', body: previewText(saved.content), url: '/' })
           .catch((err) => log('chat: push failed', err));
       }
     })();

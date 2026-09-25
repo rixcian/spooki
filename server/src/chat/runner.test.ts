@@ -69,7 +69,7 @@ describe('ChatRunner', () => {
     await handle.finished;
     expect(events.map((e) => e.type)).toEqual(['user']);
     expect(messages.last()?.content).toBe('Background answer');
-    expect(push.sent).toEqual([{ title: 'Hermes', body: 'Background answer', url: '/' }]);
+    expect(push.sent).toEqual([{ title: 'Hermik', body: 'Background answer', url: '/' }]);
   });
 
   it('retry replaces a failed reply without duplicating the user message', async () => {

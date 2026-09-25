@@ -26,11 +26,11 @@ export function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
   return (
     <main className="flex min-h-dvh items-center justify-center px-6 pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)]">
       <form onSubmit={submit} className="flex w-full max-w-sm flex-col items-center gap-6">
-        <div className="grid size-28 place-items-center rounded-full bg-surface shadow-soft">
-          <Mascot className="size-22" />
+        <div className="size-32 overflow-hidden rounded-full bg-white shadow-soft">
+          <Mascot className="size-32" />
         </div>
         <div className="space-y-1 text-center">
-          <h1 className="text-3xl font-semibold tracking-tight">Hi, I&apos;m Hermes</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">Hi, I&apos;m Hermik</h1>
           <p className="text-muted-foreground">Enter your password to continue.</p>
         </div>
         <label htmlFor="password" className="sr-only">

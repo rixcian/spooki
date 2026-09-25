@@ -21,7 +21,7 @@ export default function App() {
   if (view === 'loading') {
     return (
       <div className="grid h-dvh place-items-center">
-        <Mascot className="size-20" thinking />
+        <Mascot className="size-24 shadow-soft" thinking />
       </div>
     );
   }
