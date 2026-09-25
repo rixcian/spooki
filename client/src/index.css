@@ -464,6 +464,10 @@
 :root[data-nav='back']::view-transition-new(root) {
   animation: vt-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+/* Shared elements only morph on screen changes, not on a theme switch. */
+:root[data-nav='theme'] * {
+  view-transition-name: none !important;
+}
 ::view-transition-old(nav-button) {
   animation: vt-spin-out 0.25s ease-in both;
 }
@@ -487,4 +491,16 @@
 }
 @keyframes vt-spin-in {
   from { opacity: 0; transform: rotate(-90deg) scale(0.6); }
+}
+
+/* Theme switch: the new theme grows as a circle from the tapped option. */
+:root[data-nav='theme']::view-transition-old(root) {
+  animation: none;
+}
+:root[data-nav='theme']::view-transition-new(root) {
+  animation: vt-reveal 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes vt-reveal {
+  from { clip-path: circle(0 at var(--reveal-x, 50%) var(--reveal-y, 50%)); }
+  to { clip-path: circle(150vmax at var(--reveal-x, 50%) var(--reveal-y, 50%)); }
 }

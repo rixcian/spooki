@@ -1,4 +1,4 @@
-import { Bell, ChevronLeft, LogOut, PlugZap, RotateCcw, Smile } from 'lucide-react';
+import { Bell, ChevronLeft, Clock, LogOut, Moon, Palette, PlugZap, RotateCcw, Smile, Sun } from 'lucide-react';
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import { FloatingButton, pillPrimary, pillSecondary } from '@/components/FloatingButton';
 import { Mascot } from '@/components/Mascot';
@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { api, type SettingsView, type TestResult } from '@/lib/api';
 import { useBotName } from '@/lib/botName';
 import { enablePush, pushStatus, type PushStatus } from '@/lib/push';
+import { DARK_FROM_HOUR, DARK_UNTIL_HOUR, setThemeMode, useThemeMode, type ThemeMode } from '@/lib/theme';
+import { cn } from '@/lib/utils';
 
 const PUSH_TEXT: Record<PushStatus, string> = {
   enabled: 'Notifications are on.',
@@ -16,6 +18,50 @@ const PUSH_TEXT: Record<PushStatus, string> = {
 };
 
 const MAX_NAME = 40;
+
+const THEMES: { mode: ThemeMode; label: string; icon: ReactNode }[] = [
+  { mode: 'light', label: 'Light', icon: <Sun className="size-4" /> },
+  { mode: 'dark', label: 'Dark', icon: <Moon className="size-4" /> },
+  { mode: 'auto', label: 'Auto', icon: <Clock className="size-4" /> },
+];
+
+// Segmented control with a springy sliding thumb.
+function ThemePicker() {
+  const current = useThemeMode();
+  const index = THEMES.findIndex((t) => t.mode === current);
+  return (
+    <div className="space-y-2">
+      <div role="radiogroup" aria-label="Theme" className="relative grid grid-cols-3 rounded-full bg-bubble-assistant p-1">
+        <span
+          aria-hidden
+          className="absolute inset-y-1 left-1 w-[calc((100%-0.5rem)/3)] rounded-full bg-surface shadow-soft transition-transform duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+          style={{ transform: `translateX(${index * 100}%)` }}
+        />
+        {THEMES.map((t) => (
+          <button
+            key={t.mode}
+            type="button"
+            role="radio"
+            aria-checked={current === t.mode}
+            onClick={(e) => setThemeMode(t.mode, { x: e.clientX, y: e.clientY })}
+            className={cn(
+              'relative flex h-10 items-center justify-center gap-1.5 rounded-full text-[15px] font-medium transition-colors',
+              current === t.mode ? 'text-foreground' : 'text-muted-foreground',
+            )}
+          >
+            <span className={cn('transition-transform duration-500', current === t.mode && 'scale-110 rotate-[360deg]')}>{t.icon}</span>
+            {t.label}
+          </button>
+        ))}
+      </div>
+      <p className="px-1 text-sm text-muted-foreground">
+        {current === 'auto'
+          ? `Dark from ${DARK_FROM_HOUR}:00 to ${DARK_UNTIL_HOUR}:00, light the rest of the day.`
+          : 'Saved on this device.'}
+      </p>
+    </div>
+  );
+}
 
 const field =
   'h-12 w-full rounded-2xl bg-bubble-assistant px-4 text-[17px] outline-none placeholder:text-muted-foreground/70 focus-visible:ring-2 focus-visible:ring-brand-from/40';
@@ -121,6 +167,10 @@ export function SettingsScreen({ onBack, onLoggedOut }: { onBack: () => void; on
               Save name
             </Button>
           </form>
+        </Card>
+
+        <Card title="Appearance" icon={<Palette className="size-4" />}>
+          <ThemePicker />
         </Card>
 
         <Card title="Hermes connection" icon={<PlugZap className="size-4" />}>

@@ -133,6 +133,12 @@ names, logos or artwork.
 
 - **Canvas:** near-white background with a soft sky-blue gradient rising
   from the bottom edge. Dark mode uses deep navy with a faint blue glow.
+- **Theme:** Settings → Appearance offers **Light**, **Dark** and **Auto**
+  (default). Auto is time-based: dark from 19:00 to 7:00, switching exactly
+  on the hour and re-checked when the app returns to the front. The choice
+  is stored per device in `localStorage`. A switch that changes the look is
+  revealed as a circle growing from the tapped option (View Transitions);
+  the segmented control's thumb slides with a spring.
 - **Header:** a floating round white button (soft shadow) top-left opens
   Settings. Centered is the bot's avatar (the user's plush "Hermik"
   character, `client/public/hermik-avatar.jpg`) with a white "Hermik" name pill
