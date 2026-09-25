@@ -173,6 +173,10 @@ names, logos or artwork.
     While listening, the mic springs into a brand-gradient bubble: the icon
     spins away into four bouncing sound bars, and two soft ripples spread
     outward. The field's placeholder reads "Listening…".
+  - Send and stop are one morphing button: the arrow spins up and away as
+    a dark circle with a square pops in; a brand-gradient comet orbits the
+    button while the agent works and the square gently breathes. It squishes
+    when pressed.
   - **Stop** calls `POST /api/chat/stop`. The server aborts its Hermes
     request, which makes Hermes interrupt the agent, and saves the partial
     reply as complete with a `_Stopped_` note. No push is sent for a

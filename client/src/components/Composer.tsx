@@ -106,6 +106,62 @@ function MicButton({ listening, onClick }: { listening: boolean; onClick: () => 
   );
 }
 
+// One button that morphs: the arrow spins out and a square pops in while the agent works,
+// with a gradient ring orbiting it. Staying mounted lets both directions animate.
+function SendStopButton({
+  busy,
+  canSend,
+  stopLabel,
+  onStop,
+}: {
+  busy: boolean;
+  canSend: boolean;
+  stopLabel: string;
+  onStop: () => void;
+}) {
+  const spring = 'transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]';
+  return (
+    <button
+      type={busy ? 'button' : 'submit'}
+      aria-label={busy ? stopLabel : 'Send'}
+      disabled={!busy && !canSend}
+      onClick={busy ? onStop : undefined}
+      className="group relative grid size-10 shrink-0 place-items-center rounded-full transition-transform active:scale-90"
+    >
+      {busy && <span aria-hidden className="stop-orbit" />}
+      {/* Background layers cross-fade (gradients can't transition directly). */}
+      <span aria-hidden className="absolute inset-0 rounded-full bg-bubble-user" />
+      <span
+        aria-hidden
+        className={cn('absolute inset-0 rounded-full brand-gradient transition-opacity duration-300', canSend && !busy ? 'opacity-100' : 'opacity-0')}
+      />
+      <span
+        aria-hidden
+        className={cn('absolute inset-0 rounded-full bg-foreground', spring, busy ? 'scale-100 opacity-100' : 'scale-50 opacity-0')}
+      />
+      <span className="relative grid place-items-center">
+        <ArrowUp
+          strokeWidth={2.5}
+          className={cn(
+            'col-start-1 row-start-1 size-5',
+            spring,
+            canSend ? 'text-white' : 'text-bubble-user-foreground/50',
+            busy ? '-translate-y-3 scale-50 rotate-90 opacity-0' : 'translate-y-0 scale-100 opacity-100',
+          )}
+        />
+        <Square
+          fill="currentColor"
+          className={cn(
+            'col-start-1 row-start-1 size-3.5 text-background',
+            spring,
+            busy ? 'animate-breathe scale-100 opacity-100' : 'scale-0 -rotate-90 opacity-0',
+          )}
+        />
+      </span>
+    </button>
+  );
+}
+
 export function Composer({
   busy,
   onSend,
@@ -158,28 +214,7 @@ export function Composer({
         {speech.supported && (
           <MicButton listening={speech.listening} onClick={speech.listening ? speech.stop : speech.start} />
         )}
-        {busy ? (
-          <button
-            type="button"
-            aria-label={`Stop ${name}`}
-            onClick={onStop}
-            className="grid size-10 shrink-0 place-items-center rounded-full bg-foreground text-background transition active:scale-95"
-          >
-            <Square className="size-3.5" fill="currentColor" />
-          </button>
-        ) : (
-          <button
-            type="submit"
-            aria-label="Send"
-            disabled={!canSend}
-            className={cn(
-              'grid size-10 shrink-0 place-items-center rounded-full transition active:scale-95',
-              canSend ? 'brand-gradient' : 'bg-bubble-user text-bubble-user-foreground/50',
-            )}
-          >
-            <ArrowUp className="size-5" strokeWidth={2.5} />
-          </button>
-        )}
+        <SendStopButton busy={busy} canSend={canSend} stopLabel={`Stop ${name}`} onStop={onStop} />
       </div>
     </form>
   );
