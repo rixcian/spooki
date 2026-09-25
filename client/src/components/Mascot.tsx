@@ -18,7 +18,7 @@ export function AgentBadge({ status }: { status?: string | null }) {
   return (
     <div className="flex flex-col items-center">
       <div className="grid size-16 place-items-center overflow-hidden rounded-full bg-white shadow-soft">
-        <Mascot className="size-16 scale-[1.3] object-[50%_30%]" thinking={Boolean(status)} />
+        <Mascot className="size-16" thinking={Boolean(status)} />
       </div>
       <div className="-mt-2 flex max-w-64 flex-col items-center rounded-2xl bg-surface px-4 py-1.5 text-center shadow-soft">
         <span className="font-semibold leading-tight">{BOT_NAME}</span>
