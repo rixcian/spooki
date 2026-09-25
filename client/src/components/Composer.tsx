@@ -62,6 +62,50 @@ function AttachMenu() {
   );
 }
 
+const BAR_DELAYS = [0, 180, 90, 270];
+
+function MicButton({ listening, onClick }: { listening: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      aria-label={listening ? 'Stop dictation' : 'Dictate'}
+      aria-pressed={listening}
+      onClick={onClick}
+      className={cn(
+        iconButton,
+        'relative transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]',
+        listening && 'scale-110 brand-gradient text-white hover:bg-transparent',
+      )}
+    >
+      {listening && (
+        <>
+          <span className="mic-ripple" />
+          <span className="mic-ripple" style={{ animationDelay: '0.9s' }} />
+        </>
+      )}
+      <span className="relative grid size-5 place-items-center">
+        <Mic
+          className={cn(
+            'col-start-1 row-start-1 size-5 transition-all duration-300',
+            listening ? 'scale-0 rotate-90 opacity-0' : 'scale-100 opacity-100',
+          )}
+        />
+        <span
+          aria-hidden
+          className={cn(
+            'col-start-1 row-start-1 flex h-4 items-center gap-[3px] transition-all duration-300',
+            listening ? 'scale-100 opacity-100' : 'scale-0 opacity-0',
+          )}
+        >
+          {BAR_DELAYS.map((d) => (
+            <span key={d} className="mic-bar" style={{ animationDelay: `${d}ms` }} />
+          ))}
+        </span>
+      </span>
+    </button>
+  );
+}
+
 export function Composer({
   busy,
   onSend,
@@ -112,15 +156,7 @@ export function Composer({
           className="field-sizing-content max-h-40 min-h-10 flex-1 resize-none bg-transparent px-1 py-2 text-[17px] leading-6 outline-none placeholder:text-muted-foreground/70"
         />
         {speech.supported && (
-          <button
-            type="button"
-            aria-label={speech.listening ? 'Stop dictation' : 'Dictate'}
-            aria-pressed={speech.listening}
-            onClick={speech.listening ? speech.stop : speech.start}
-            className={cn(iconButton, speech.listening && 'bg-destructive/10 text-destructive-foreground animate-pulse')}
-          >
-            <Mic className="size-5" />
-          </button>
+          <MicButton listening={speech.listening} onClick={speech.listening ? speech.stop : speech.start} />
         )}
         {busy ? (
           <button

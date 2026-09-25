@@ -170,6 +170,9 @@ names, logos or artwork.
   - **Mic** dictates into the field using the browser's Web Speech API
     (`webkitSpeechRecognition`, language from `navigator.language`). It is
     hidden when the API is missing; errors show briefly above the box.
+    While listening, the mic springs into a brand-gradient bubble: the icon
+    spins away into four bouncing sound bars, and two soft ripples spread
+    outward. The field's placeholder reads "Listening…".
   - **Stop** calls `POST /api/chat/stop`. The server aborts its Hermes
     request, which makes Hermes interrupt the agent, and saves the partial
     reply as complete with a `_Stopped_` note. No push is sent for a
