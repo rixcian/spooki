@@ -10,5 +10,5 @@
     "build": "npm run build -w client && npm run build -w server",
     "release": "npm version --no-git-tag-version --workspaces --include-workspace-root"
   },
-  "version": "0.1.0"
+  "version": "0.1.1"
 }

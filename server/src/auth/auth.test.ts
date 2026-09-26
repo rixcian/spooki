@@ -27,10 +27,10 @@ beforeEach(() => {
   app.get('/api/secret', (c) => c.text('secret'));
 });
 
-const login = (password: string, ip = '1.1.1.1') =>
+const login = (password: string, ip = '1.1.1.1', proto = 'https') =>
   app.request('/api/auth/login', {
     method: 'POST',
-    headers: { 'content-type': 'application/json', 'x-real-ip': ip },
+    headers: { 'content-type': 'application/json', 'x-real-ip': ip, 'x-forwarded-proto': proto },
     body: JSON.stringify({ password }),
   });
 
@@ -49,6 +49,23 @@ describe('auth', () => {
     expect(header).toMatch(/SameSite=Strict/i);
     const secret = await app.request('/api/secret', { headers: { cookie: cookieFrom(res) } });
     expect(await secret.text()).toBe('secret');
+  });
+
+  it('omits Secure over plain HTTP so the browser keeps the cookie (e.g. a Tailscale IP)', async () => {
+    const res = await login('pw', '1.1.1.1', 'http');
+    const header = res.headers.get('set-cookie') ?? '';
+    expect(header).toMatch(/HttpOnly/i);
+    expect(header).toMatch(/SameSite=Strict/i);
+    expect(header).not.toMatch(/Secure/i);
+  });
+
+  it('treats a direct https URL as secure even without a proxy header', async () => {
+    const res = await app.request('https://spooki.example/api/auth/login', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ password: 'pw' }),
+    });
+    expect(res.headers.get('set-cookie') ?? '').toMatch(/Secure/i);
   });
 
   it('rejects a wrong password', async () => {

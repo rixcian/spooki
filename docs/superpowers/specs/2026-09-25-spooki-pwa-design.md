@@ -235,8 +235,10 @@ names, logos or artwork.
 
 - Single user. `APP_PASSWORD` is set in env, hashed with argon2 in memory
   at startup, and never persisted in plain text.
-- `POST /api/auth/login` sets a session cookie: `HttpOnly`, `Secure`,
-  `SameSite=Strict`, valid 90 days. Only a hash of the token is stored in
+- `POST /api/auth/login` sets a session cookie: `HttpOnly`,
+  `SameSite=Strict`, valid 90 days, and `Secure` when the request came over
+  HTTPS (`X-Forwarded-Proto: https` or an https URL). Browsers drop `Secure`
+  cookies on plain-HTTP pages, which broke login over a Tailscale IP. Only a hash of the token is stored in
   `sessions`.
 - `POST /api/auth/logout` deletes the session.
 - Every `/api/*` route except login requires a valid session. Static PWA

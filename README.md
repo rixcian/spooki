@@ -200,7 +200,9 @@ Compose-only, in `.env`: `SPOOKI_TAG` (image tag, default `latest`),
 ## Security
 
 - **One password, one person.** Sessions last 90 days in an `HttpOnly`,
-  `Secure`, `SameSite=Strict` cookie; only a SHA-256 of the token is stored.
+  `SameSite=Strict` cookie - `Secure` whenever the page is served over HTTPS
+  (directly or via `X-Forwarded-Proto`), so plain-HTTP access over a VPN or
+  LAN still works. Only a SHA-256 of the token is stored.
 - **Brute force is slow.** Five failed logins per minute per IP, then it
   waits.
 - **The Hermes key stays on the server.** Settings only ever show whether a key
