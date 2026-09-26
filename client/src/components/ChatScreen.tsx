@@ -122,7 +122,7 @@ export function ChatScreen({ onOpenSettings }: { onOpenSettings: () => void }) {
       </header>
 
       <main
-        className="fade-edges relative flex-1 overflow-y-auto px-4 pt-[calc(max(env(safe-area-inset-top),0.75rem)+6.5rem)]"
+        className="fade-edges relative flex-1 overflow-y-auto px-4 [scrollbar-width:none] pt-[calc(max(env(safe-area-inset-top),0.75rem)+6.5rem)]"
         style={{ '--composer-h': `${composerH}px` } as CSSProperties}
       >
         <Greeting visible={empty} />
