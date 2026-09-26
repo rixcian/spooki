@@ -21,6 +21,15 @@ export function clientIp(c: Context): string {
   return parts.at(-1) ?? 'unknown';
 }
 
+// Browsers drop `Secure` cookies on plain http:// pages (localhost aside), which would make
+// login "succeed" and then 401. So the flag follows the scheme the browser actually used:
+// NPM sets X-Forwarded-Proto; a direct https URL counts too.
+export function isHttps(c: Context): boolean {
+  const forwarded = c.req.header('x-forwarded-proto')?.split(',')[0]?.trim().toLowerCase();
+  if (forwarded) return forwarded === 'https';
+  return new URL(c.req.url).protocol === 'https:';
+}
+
 export function authRoutes({ verify, sessions, limiter }: AuthDeps): Hono {
   const app = new Hono();
 
@@ -34,7 +43,7 @@ export function authRoutes({ verify, sessions, limiter }: AuthDeps): Hono {
     }
     setCookie(c, SESSION_COOKIE, sessions.create(), {
       httpOnly: true,
-      secure: true,
+      secure: isHttps(c),
       sameSite: 'Strict',
       path: '/',
       maxAge: SESSION_TTL_MS / 1000,
@@ -44,7 +53,7 @@ export function authRoutes({ verify, sessions, limiter }: AuthDeps): Hono {
 
   app.post('/logout', (c) => {
     sessions.revoke(getCookie(c, SESSION_COOKIE));
-    deleteCookie(c, SESSION_COOKIE, { path: '/', secure: true });
+    deleteCookie(c, SESSION_COOKIE, { path: '/', secure: isHttps(c) });
     return c.json({ ok: true });
   });
 
