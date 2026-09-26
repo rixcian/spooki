@@ -1,4 +1,4 @@
-# Hermik — Hermes Agent chat PWA
+# Spooki — Hermes Agent chat PWA
 
 **Date:** 2026-09-25
 **Status:** Approved design, pending implementation plan
@@ -6,7 +6,7 @@
 ## Goal
 
 Replace the Telegram bot as the way to talk to a self-hosted Nous Research
-Hermes Agent. Hermik is a single-user chat PWA installed on an iPhone Home
+Hermes Agent. Spooki is a single-user chat PWA installed on an iPhone Home
 Screen. It supports:
 
 1. Plain text chat with streaming replies.
@@ -29,7 +29,7 @@ the server.
 iPhone (Home Screen PWA)
    │ HTTPS (Nginx Proxy Manager, Let's Encrypt)
    ▼
-hermik container (one Node process, port 3000)
+spooki container (one Node process, port 3000)
    ├─ serves the built PWA (static files)
    ├─ /api/auth/*      login / logout
    ├─ /api/chat        proxies to Hermes, streams SSE back
@@ -58,9 +58,9 @@ Hermes' built-in API server (`API_SERVER_ENABLED=true`, default port 8642)
 exposes an OpenAI-compatible `POST /v1/chat/completions` endpoint with
 bearer-token auth.
 
-- Hermik calls it in **stateless mode**: every request sends the last 40
+- Spooki calls it in **stateless mode**: every request sends the last 40
   messages from the SQLite history as the `messages` array, with
-  `stream: true`. Hermik's DB is the source of truth for the conversation.
+  `stream: true`. Spooki's DB is the source of truth for the conversation.
 - Cron messages are sent to Hermes as `assistant` turns, prefixed with
   `[Scheduled: <job name>]`, so Hermes has context when the user replies to
   one.
@@ -125,11 +125,93 @@ returns `409`, and the client disables the send button while waiting.
 - The PWA manifest, icons, and `display: standalone` config make it
   installable to the Home Screen.
 
+### Visual design
+
+Simple, clean, professional and cute, modelled on Meta's Muse AI app
+(reference screenshots from the user, 2026-09-25). Style only: no Meta
+names, logos or artwork.
+
+- **Canvas:** near-white background with a soft sky-blue gradient rising
+  from the bottom edge. Dark mode uses deep navy with a faint blue glow.
+- **Theme:** Settings → Appearance offers **Light**, **Dark** and **Auto**
+  (default). Auto is time-based: dark from 19:00 to 7:00, switching exactly
+  on the hour and re-checked when the app returns to the front. The choice
+  is stored per device in `localStorage`. A switch that changes the look is
+  revealed as a circle growing from the tapped option (View Transitions);
+  the segmented control's thumb slides with a spring.
+- **Header:** a floating round white button (soft shadow) top-left opens
+  Settings. Centered is the bot's avatar (the user's plush "Spooki"
+  character, `client/public/spooki-avatar.jpg`) with a white "Spooki" name pill
+  under it. The bot is called **Spooki** everywhere in the UI and in push
+  titles; "Hermes" only names the backend server. While a reply runs, the pill shows a status line
+  ("Thinking…", or the running tool's label).
+- **Empty chat:** no header badge. A big centered avatar (gently bobbing)
+  with "What can I take off your plate?" and a subtitle. On the first
+  message the greeting shrinks and floats up while the header badge springs
+  in ~150ms later, so the avatar appears to move into the header. New
+  bubbles, tool cards and typing dots pop in; history loaded on open does not.
+- **Bot name:** renameable in Settings (1–40 characters, stored
+  in `settings` as `bot_name`, default "Spooki"). It is used in the header,
+  greeting, login heading, labels and push titles. The client caches it in
+  `localStorage` so the login screen can greet by name. "Reset to env"
+  resets only the Hermes connection, not the name.
+- **Bubbles:** large rounded (≈24px) bubbles with ~17px text. Assistant is
+  light grey on the left; user is light blue on the right. No per-message
+  avatars.
+- **Typing:** a small grey bubble with three bouncing dots.
+- **Streaming text:** each new word drifts in from a soft blur (≈0.45s),
+  and a small glowing brand-gradient dot bobs at the end of the text until
+  the reply finishes. Code blocks don't animate. Respects
+  `prefers-reduced-motion`.
+- **Tools:** an activity card inside the reply: icon tile, tool name and
+  its label (e.g. "web_search · cats"), with a spinner until completed.
+- **Cron messages:** a small "Scheduled · <job>" caption above the bubble.
+- **Errors:** the bubble plus a pill **Retry** button. It pops in with a
+  small wiggle, its arrow nudges every few seconds as a hint, and on tap the
+  pill squishes and the arrow spins a full turn (~0.45s) before retrying.
+- **Composer:** a floating white rounded box: **+** on the left, the
+  "Message" field, then a **mic** and a round **send** button (pale when
+  empty, blue gradient with text). While Spooki is working, send becomes a
+  dark round **stop** button with a square.
+  - **+** opens a menu (Photo library, Take photo, File), all disabled with
+    a "Soon" badge. Attachments are still out of scope; this is design only.
+  - **Mic** dictates into the field using the browser's Web Speech API
+    (`webkitSpeechRecognition`, language from `navigator.language`). It is
+    hidden when the API is missing; errors show briefly above the box.
+    While listening, the mic springs into a brand-gradient bubble: the icon
+    spins away into four bouncing sound bars, and two soft ripples spread
+    outward. The field's placeholder reads "Listening…".
+  - Send and stop are one morphing button: the arrow spins up and away as
+    a dark circle with a square pops in; a brand-gradient comet orbits the
+    button while the agent works and the square gently breathes. It squishes
+    when pressed.
+  - **Stop** calls `POST /api/chat/stop`. The server aborts its Hermes
+    request, which makes Hermes interrupt the agent, and saves the partial
+    reply as complete with a `_Stopped_` note. No push is sent for a
+    stopped reply.
+- **Buttons:** primary actions are blue gradient pills; secondary are
+  light grey pills.
+- **Login:** centered avatar, a friendly heading, pill password field and
+  gradient button.
+- **Settings:** no page title; grouped white cards of rows, like the
+  Muse "Goals" screen. The top row matches the chat header exactly, so the
+  avatar and name pill stay in place when switching screens. A round pen
+  pill peeks out from behind the name pill (~0.35s after arriving) and sits
+  beside it. Tapping it edits the name inside the pill (text selected, pen
+  becomes a ✓); Enter, ✓ or leaving the field saves, Escape cancels.
+- **Chat ⇄ Settings transition:** a View Transition (Safari 18+; instant
+  elsewhere or with Reduce Motion). Settings slides in from the menu's side
+  while the chat sinks back and blurs; the ☰ button spins into the ‹ back
+  button, and the avatar and name pill stay put.
+  Back plays in reverse. The chat keeps a snapshot of its history while in
+  Settings so it reappears fully rendered.
+- **Font:** Figtree (friendly, rounded), self-hosted via Fontsource.
+
 ## Cron → chat
 
 - In Hermes, cron jobs are configured with `deliver: local`, so output is
   written under `~/.hermes/cron/output/`.
-- That directory is mounted **read-only** into the hermik container at
+- That directory is mounted **read-only** into the spooki container at
   `CRON_OUTPUT_DIR` (default `/hermes/cron/output`).
 - The watcher (chokidar, plus a full scan on startup) handles each new
   file whose path is not in `cron_seen`: it parses the job name and content,
@@ -183,13 +265,13 @@ Precedence for the Hermes URL and key: **settings table > env**.
 - A multi-stage `Dockerfile`: build the client, build the server, then a
   slim Node runtime.
 - `docker-compose.yml`:
-  - The hermik service joins the external Docker networks that Hermes and
+  - The spooki service joins the external Docker networks that Hermes and
     Nginx Proxy Manager use.
   - `./data:/data`.
   - The Hermes data volume/path is mounted read-only at
     `/hermes/cron/output`.
   - `restart: unless-stopped`.
-- **HTTPS:** an NPM proxy host → `hermik:3000` with a Let's Encrypt
+- **HTTPS:** an NPM proxy host → `spooki:3000` with a Let's Encrypt
   certificate. The server sets `X-Accel-Buffering: no` on SSE responses so
   nginx does not buffer them. No custom NPM config is needed.
 - **Deploy command:** `git pull && docker compose up -d --build`.

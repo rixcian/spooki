@@ -1,4 +1,4 @@
-# Hermik PWA Implementation Plan
+# Spooki PWA Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -8,7 +8,7 @@
 
 **Tech Stack:** Node 22, TypeScript (strict, ESM), Hono + @hono/node-server, better-sqlite3, web-push, @node-rs/argon2, chokidar 4, Vitest; React + Vite, Tailwind CSS v4, coss ui (shadcn registry `@coss`), react-markdown + remark-gfm; Docker Compose.
 
-**Spec:** `docs/superpowers/specs/2026-09-25-hermik-pwa-design.md`
+**Spec:** `docs/superpowers/specs/2026-09-25-spooki-pwa-design.md`
 
 ## Global Constraints
 
@@ -16,7 +16,7 @@
 - Single user. `APP_PASSWORD` comes from env and is never persisted in plain text.
 - The Hermes API key **never reaches the browser**. Settings responses expose only `apiKeySet` and `apiKeyLast4`.
 - Hermes URL/key precedence: **settings table > env**.
-- Session cookie `hermik_session`: `HttpOnly`, `Secure`, `SameSite=Strict`, `Path=/`, 90 days.
+- Session cookie `spooki_session`: `HttpOnly`, `Secure`, `SameSite=Strict`, `Path=/`, 90 days.
 - Login rate limit: **5 failed attempts per minute per client IP**. The IP comes from `X-Real-IP`, falling back to the rightmost `X-Forwarded-For` entry.
 - Every `/api/*` route requires a session, except `/api/auth/login`, `/api/auth/me`, and `/api/health`.
 - SSE responses set `X-Accel-Buffering: no` and `Cache-Control: no-cache`.
@@ -114,7 +114,7 @@ client/
 `package.json`:
 ```json
 {
-  "name": "hermik",
+  "name": "spooki",
   "private": true,
   "workspaces": ["server", "client"],
   "scripts": {
@@ -137,7 +137,7 @@ data
 `server/package.json`:
 ```json
 {
-  "name": "@hermik/server",
+  "name": "@spooki/server",
   "private": true,
   "type": "module",
   "scripts": {
@@ -553,7 +553,7 @@ git commit -m "feat(server): sqlite schema, message store, history builder"
   export interface RateLimiter { isBlocked(key: string): boolean; recordFailure(key: string): void }
   export function createRateLimiter(opts: { max: number; windowMs: number; now?: () => number }): RateLimiter
   // routes.ts
-  export const SESSION_COOKIE = 'hermik_session';
+  export const SESSION_COOKIE = 'spooki_session';
   export interface AuthDeps { verify: PasswordVerifier; sessions: SessionStore; limiter: RateLimiter }
   export function authRoutes(deps: AuthDeps): Hono          // POST /login, POST /logout, GET /me
   export function clientIp(c: Context): string
@@ -769,7 +769,7 @@ import type { PasswordVerifier } from './password.js';
 import type { RateLimiter } from './rateLimit.js';
 import { SESSION_TTL_MS, type SessionStore } from './sessions.js';
 
-export const SESSION_COOKIE = 'hermik_session';
+export const SESSION_COOKIE = 'spooki_session';
 
 export interface AuthDeps {
   verify: PasswordVerifier;
@@ -1501,7 +1501,7 @@ beforeEach(() => { subs = new SubscriptionStore(openDb(':memory:')); });
 
 describe('loadOrCreateVapid', () => {
   it('generates once and persists', () => {
-    const dataDir = mkdtempSync(join(tmpdir(), 'hermik-'));
+    const dataDir = mkdtempSync(join(tmpdir(), 'spooki-'));
     const cfg = { dataDir, vapidSubject: 'mailto:a@b.c' };
     const first = loadOrCreateVapid(cfg);
     expect(first.publicKey.length).toBeGreaterThan(20);
@@ -2430,7 +2430,7 @@ describe('cron watcher', () => {
   };
 
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), 'hermik-cron-'));
+    dir = mkdtempSync(join(tmpdir(), 'spooki-cron-'));
     const db = openDb(':memory:');
     messages = new MessageStore(db);
     seen = new CronSeenStore(db);
@@ -2719,7 +2719,7 @@ async function loginCookie(): Promise<string> {
   const res = await app.request('/api/auth/login', {
     method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ password: 'pw' }),
   });
-  return /hermik_session=[^;]*/.exec(res.headers.get('set-cookie') ?? '')![0];
+  return /spooki_session=[^;]*/.exec(res.headers.get('set-cookie') ?? '')![0];
 }
 
 describe('createApp', () => {
@@ -2835,7 +2835,7 @@ import { SettingsStore, effectiveHermes } from './settings/store.js';
 async function main() {
   const config = loadConfig(process.env);
   mkdirSync(config.dataDir, { recursive: true });
-  const db = openDb(join(config.dataDir, 'hermik.db'));
+  const db = openDb(join(config.dataDir, 'spooki.db'));
 
   const messages = new MessageStore(db);
   const settings = new SettingsStore(db);
@@ -2873,7 +2873,7 @@ async function main() {
   await startCronWatcher({ dir: config.cronOutputDir, seen, messages, push });
 
   serve({ fetch: app.fetch, port: config.port }, (info) => {
-    console.log(`hermik listening on :${info.port}`);
+    console.log(`spooki listening on :${info.port}`);
   });
 }
 
@@ -2890,7 +2890,7 @@ Expected: no errors; `server/dist/index.js` exists.
 
 Run (a temp data dir, no client build yet):
 ```bash
-APP_PASSWORD=pw DATA_DIR=/tmp/hermik-smoke CRON_OUTPUT_DIR=/tmp/hermik-smoke/cron node server/dist/index.js
+APP_PASSWORD=pw DATA_DIR=/tmp/spooki-smoke CRON_OUTPUT_DIR=/tmp/spooki-smoke/cron node server/dist/index.js
 ```
 In another shell: `curl -s localhost:3000/api/health` → `{"ok":true}`. The log shows `cron: … does not exist`. Stop with Ctrl+C.
 
@@ -2938,7 +2938,7 @@ npm create vite@latest client -- --template react-ts --no-interactive
 ```
 (If your create-vite version rejects `--no-interactive`, run it without that flag and answer "No" to "install and start now".)
 
-Then set `"name": "@hermik/client"` in `client/package.json` and add `"test": "vitest run"` to its scripts. Delete `client/src/App.css`, `client/src/assets/`, and `client/public/vite.svg`.
+Then set `"name": "@spooki/client"` in `client/package.json` and add `"test": "vitest run"` to its scripts. Delete `client/src/App.css`, `client/src/assets/`, and `client/public/vite.svg`.
 
 - [ ] **Step 2: Install client dependencies**
 
@@ -3143,7 +3143,7 @@ export function LoginScreen({ onSuccess }: { onSuccess: () => void }) {
   return (
     <main className="flex min-h-dvh items-center justify-center p-6">
       <form onSubmit={submit} className="w-full max-w-sm space-y-4">
-        <h1 className="text-2xl font-semibold">Hermik</h1>
+        <h1 className="text-2xl font-semibold">Spooki</h1>
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
           <Input
@@ -3237,7 +3237,7 @@ createRoot(document.getElementById('root')!).render(
 
 - [ ] **Step 10: Verify in the browser**
 
-Terminal 1: `APP_PASSWORD=pw DATA_DIR=/tmp/hermik-dev CRON_OUTPUT_DIR=/tmp/hermik-dev/cron npx -w server tsx src/index.ts`
+Terminal 1: `APP_PASSWORD=pw DATA_DIR=/tmp/spooki-dev CRON_OUTPUT_DIR=/tmp/spooki-dev/cron npx -w server tsx src/index.ts`
 Terminal 2: `npm run dev -w client`
 
 Open `http://localhost:5173`. Expected: the login form appears. A wrong password shows "Wrong password". `pw` shows the temporary Settings button. Also run `npm run build -w client`; expected: no type errors.
@@ -3995,7 +3995,7 @@ Expected in `client/public/`: `pwa-64x64.png`, `pwa-192x192.png`, `pwa-512x512.p
 `client/public/manifest.webmanifest`:
 ```json
 {
-  "name": "Hermik",
+  "name": "Spooki",
   "short_name": "Hermes",
   "start_url": "/",
   "scope": "/",
@@ -4015,7 +4015,7 @@ Replace the `<head>` of `client/index.html` with:
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
-  <title>Hermik</title>
+  <title>Spooki</title>
   <link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="apple-touch-icon" href="/apple-touch-icon-180x180.png" />
   <link rel="manifest" href="/manifest.webmanifest" />
@@ -4041,7 +4041,7 @@ const PUSH_TEXT: Record<PushStatus, string> = {
   enabled: 'Notifications are on.',
   disabled: 'Notifications are off.',
   denied: 'Notifications are blocked. Allow them in iOS Settings → Notifications → Hermes.',
-  'needs-install': 'Add Hermik to your Home Screen (Share → Add to Home Screen) to enable notifications.',
+  'needs-install': 'Add Spooki to your Home Screen (Share → Add to Home Screen) to enable notifications.',
   unsupported: 'This browser does not support push notifications.',
 };
 
@@ -4251,9 +4251,9 @@ CMD ["node", "dist/index.js"]
 `docker-compose.yml`:
 ```yaml
 services:
-  hermik:
+  spooki:
     build: .
-    container_name: hermik
+    container_name: spooki
     restart: unless-stopped
     env_file: .env
     # Hermes writes cron output as 0600 in 0700 dirs, so run as the Hermes user.
@@ -4299,13 +4299,13 @@ HERMES_GID=1000
 
 `README.md`:
 ````markdown
-# Hermik
+# Spooki
 
 A chat PWA for a self-hosted [Hermes Agent](https://hermes-agent.nousresearch.com/). It replaces the Telegram bot: you chat with streaming replies, and cron results arrive as push notifications.
 
 ## How it works
 
-- The phone PWA talks to the hermik server over HTTPS, via Nginx Proxy Manager.
+- The phone PWA talks to the spooki server over HTTPS, via Nginx Proxy Manager.
 - The server calls Hermes' API server (`/v1/chat/completions`) over a shared Docker network.
 - The server watches Hermes' cron output directory, saves new results as chat messages, and sends Web Push.
 
@@ -4319,7 +4319,7 @@ API_SERVER_KEY=<long random key>
 API_SERVER_HOST=0.0.0.0   # reachable from other containers; do NOT publish the port
 ```
 
-Restart the Hermes gateway. Set cron jobs to `deliver: local` so they stop going to Telegram. Hermik reads every run from the output directory anyway.
+Restart the Hermes gateway. Set cron jobs to `deliver: local` so they stop going to Telegram. Spooki reads every run from the output directory anyway.
 
 ## Deploy
 
@@ -4329,14 +4329,14 @@ mkdir -p data && sudo chown "$HERMES_UID:$HERMES_GID" data
 docker compose up -d --build
 ```
 
-Nginx Proxy Manager: add a proxy host `your.domain` → `hermik` port `3000`, request a Let's Encrypt certificate, and turn on Force SSL. No custom config is needed; hermik sends `X-Accel-Buffering: no` for streams.
+Nginx Proxy Manager: add a proxy host `your.domain` → `spooki` port `3000`, request a Let's Encrypt certificate, and turn on Force SSL. No custom config is needed; spooki sends `X-Accel-Buffering: no` for streams.
 
 Update with `git pull && docker compose up -d --build`.
 
 ## iPhone
 
 1. Open `https://your.domain` in Safari and log in.
-2. Tap Share → **Add to Home Screen**, then open Hermik from the Home Screen.
+2. Tap Share → **Add to Home Screen**, then open Spooki from the Home Screen.
 3. Go to Settings → **Enable notifications**.
 
 ## Development
@@ -4344,32 +4344,32 @@ Update with `git pull && docker compose up -d --build`.
 ```bash
 npm install
 npm test
-APP_PASSWORD=pw DATA_DIR=/tmp/hermik CRON_OUTPUT_DIR=/tmp/hermik/cron HERMES_URL=http://localhost:8642 HERMES_API_KEY=... npx -w server tsx src/index.ts
+APP_PASSWORD=pw DATA_DIR=/tmp/spooki CRON_OUTPUT_DIR=/tmp/spooki/cron HERMES_URL=http://localhost:8642 HERMES_API_KEY=... npx -w server tsx src/index.ts
 npm run dev -w client    # http://localhost:5173, proxies /api to :3000
 ```
 
 ## Known limitations
 
-- If Hermes asks for a dangerous-command **approval** during an API-server turn, hermik does not show it, and the turn waits. Configure Hermes approvals for the API server accordingly.
+- If Hermes asks for a dangerous-command **approval** during an API-server turn, spooki does not show it, and the turn waits. Configure Hermes approvals for the API server accordingly.
 - There is one conversation. Voice, images, and multiple threads are planned.
 ````
 
 - [ ] **Step 2: Build and smoke-test the image locally**
 
 ```bash
-docker build -t hermik:test .
+docker build -t spooki:test .
 ```
 Expected: the build succeeds.
 
 ```bash
-mkdir -p /tmp/hermik-docker/cron && docker run --rm -d --name hermik-test -p 3000:3000 -e APP_PASSWORD=pw -v /tmp/hermik-docker:/data -v /tmp/hermik-docker/cron:/hermes/cron/output:ro hermik:test
+mkdir -p /tmp/spooki-docker/cron && docker run --rm -d --name spooki-test -p 3000:3000 -e APP_PASSWORD=pw -v /tmp/spooki-docker:/data -v /tmp/spooki-docker/cron:/hermes/cron/output:ro spooki:test
 ```
 ```bash
 curl -s localhost:3000/api/health && curl -s -o /dev/null -w "%{http_code}\n" localhost:3000/
 ```
 Expected: `{"ok":true}` then `200`, and the index.html is served. Clean up:
 ```bash
-docker rm -f hermik-test
+docker rm -f spooki-test
 ```
 
 - [ ] **Step 3: Commit**
@@ -4404,9 +4404,9 @@ Run: `npm test -w server -- src/cron/cron.test.ts`. If it fails, adjust `parseCr
 
 Set `API_SERVER_ENABLED`, `API_SERVER_KEY`, and `API_SERVER_HOST=0.0.0.0` (see README) and restart. Find the network name with `docker network ls`. From inside the NPM or another container on that network, `curl http://hermes:8642/v1/models -H "Authorization: Bearer <key>"` should return JSON.
 
-- [ ] **Step 3: Deploy hermik**
+- [ ] **Step 3: Deploy spooki**
 
-Fill in `.env`, then `docker compose up -d --build`. Check `docker logs hermik`: it shows `hermik listening on :3000` and no `cron: … does not exist`. Add the NPM proxy host with Let's Encrypt. `curl https://your.domain/api/health` returns `{"ok":true}`.
+Fill in `.env`, then `docker compose up -d --build`. Check `docker logs spooki`: it shows `spooki listening on :3000` and no `cron: … does not exist`. Add the NPM proxy host with Let's Encrypt. `curl https://your.domain/api/health` returns `{"ok":true}`.
 
 - [ ] **Step 4: iPhone checklist**
 
@@ -4418,7 +4418,7 @@ Fill in `.env`, then `docker compose up -d --build`. Check `docker logs hermik`:
 - [ ] Trigger a cron job (ask Hermes to run one now). The push "Hermes · <job>" arrives and the message is labelled "⏰ Scheduled".
 - [ ] Reply to the cron message. Hermes' answer shows it knew the cron content.
 - [ ] Tapping a notification opens the app.
-- [ ] Restart the container (`docker compose restart hermik`). There are no duplicate cron messages or pushes.
+- [ ] Restart the container (`docker compose restart spooki`). There are no duplicate cron messages or pushes.
 
 - [ ] **Step 5: Retire Telegram**
 

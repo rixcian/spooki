@@ -1,0 +1,528 @@
+@import "tailwindcss";
+@import "@fontsource-variable/figtree";
+
+@custom-variant dark (&:is(.dark *));
+@plugin "@tailwindcss/typography";
+
+@theme inline {
+    --animate-skeleton: skeleton 2s -1s infinite linear;
+    --animate-caret-blink: 1s ease-out infinite caret-blink;
+    --animate-toast-success-odd: toast-success-odd 0.32s cubic-bezier(0.5, 1, 0.89, 1);
+    --animate-toast-success-even: toast-success-even 0.32s cubic-bezier(0.5, 1, 0.89, 1);
+    --animate-toast-error-odd: toast-error-odd 0.28s cubic-bezier(0.5, 1, 0.89, 1);
+    --animate-toast-error-even: toast-error-even 0.28s cubic-bezier(0.5, 1, 0.89, 1);
+    --font-heading: 'Figtree Variable', system-ui, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+    --font-sans: 'Figtree Variable', system-ui, sans-serif;
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar: var(--sidebar);
+    --color-code-highlight: var(--code-highlight);
+    --code-foreground: var(--code-foreground);
+    --color-code: var(--code);
+    --color-chart-5: var(--chart-5);
+    --color-chart-4: var(--chart-4);
+    --color-chart-3: var(--chart-3);
+    --color-chart-2: var(--chart-2);
+    --color-chart-1: var(--chart-1);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-ring: var(--ring);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-input: var(--input);
+    --color-foreground: var(--foreground);
+    --color-destructive: var(--destructive);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --color-border: var(--border);
+    --color-background: var(--background);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-warning-foreground: var(--warning-foreground);
+    --color-warning: var(--warning);
+    --color-success-foreground: var(--success-foreground);
+    --color-success: var(--success);
+    --color-info-foreground: var(--info-foreground);
+    --color-info: var(--info);
+    --color-destructive-foreground: var(--destructive-foreground);
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
+    --radius-3xl: calc(var(--radius) * 2.2);
+    --radius-4xl: calc(var(--radius) * 2.6);
+  @keyframes skeleton {
+  to {
+    background-position: -200% 0;
+        }
+    }
+  @keyframes caret-blink {
+  0%, 70%, to {
+    opacity: 1;
+        }
+  20%, 50% {
+    opacity: 0;
+        }
+    }
+  @keyframes toast-success-odd {
+  0% {
+    scale: 1;
+        }
+  30% {
+    scale: 1.025;
+        }
+  60% {
+    scale: 0.99;
+        }
+  100% {
+    scale: 1;
+        }
+    }
+  @keyframes toast-error-odd {
+  0% {
+    translate: 0 0;
+        }
+  25% {
+    translate: -3px 0;
+        }
+  50% {
+    translate: 3px 0;
+        }
+  75% {
+    translate: -3px 0;
+        }
+  100% {
+    translate: 0 0;
+        }
+    }
+  @keyframes toast-success-even {
+  0% {
+    scale: 1;
+        }
+  30% {
+    scale: 1.025;
+        }
+  60% {
+    scale: 0.99;
+        }
+  100% {
+    scale: 1;
+        }
+    }
+  @keyframes toast-error-even {
+  0% {
+    translate: 0 0;
+        }
+  25% {
+    translate: -3px 0;
+        }
+  50% {
+    translate: 3px 0;
+        }
+  75% {
+    translate: -3px 0;
+        }
+  100% {
+    translate: 0 0;
+        }
+    }
+}
+
+:root {
+    --destructive-foreground: var(--color-red-700);
+    --info: var(--color-blue-500);
+    --info-foreground: var(--color-blue-700);
+    --success: var(--color-emerald-500);
+    --success-foreground: var(--color-emerald-700);
+    --warning: var(--color-amber-500);
+    --warning-foreground: var(--color-amber-700);
+    --accent: --alpha(var(--color-black) / 4%);
+    --accent-foreground: var(--color-neutral-800);
+    --background: var(--color-white);
+    --border: --alpha(var(--color-black) / 8%);
+    --card: var(--color-white);
+    --card-foreground: var(--color-neutral-800);
+    --destructive: var(--color-red-500);
+    --foreground: var(--color-neutral-800);
+    --input: --alpha(var(--color-black) / 10%);
+    --muted: --alpha(var(--color-black) / 4%);
+    --muted-foreground: color-mix(in srgb, var(--color-neutral-500) 90%, var(--color-black));
+    --popover: var(--color-white);
+    --popover-foreground: var(--color-neutral-800);
+    --primary: var(--color-neutral-800);
+    --primary-foreground: var(--color-neutral-50);
+    --ring: var(--color-neutral-400);
+    --secondary: --alpha(var(--color-black) / 4%);
+    --secondary-foreground: var(--color-neutral-800);
+    --chart-1: var(--color-orange-600);
+    --chart-2: var(--color-teal-600);
+    --chart-3: var(--color-cyan-900);
+    --chart-4: var(--color-amber-400);
+    --chart-5: var(--color-amber-500);
+    --code: var(--color-white);
+    --code-foreground: var(--foreground);
+    --code-highlight: --alpha(var(--color-black) / 4%);
+    --radius: 0.625rem;
+    --sidebar: var(--color-neutral-50);
+    --sidebar-accent: --alpha(var(--color-black) / 4%);
+    --sidebar-accent-foreground: var(--color-neutral-800);
+    --sidebar-border: --alpha(var(--color-black) / 6%);
+    --sidebar-foreground: color-mix(in srgb, var(--color-neutral-800) 64%, var(--sidebar));
+    --sidebar-primary: var(--color-neutral-800);
+    --sidebar-primary-foreground: var(--color-neutral-50);
+    --sidebar-ring: var(--color-neutral-400);
+}
+
+.dark {
+    --destructive-foreground: var(--color-red-400);
+    --info: var(--color-blue-500);
+    --info-foreground: var(--color-blue-400);
+    --success: var(--color-emerald-500);
+    --success-foreground: var(--color-emerald-400);
+    --warning: var(--color-amber-500);
+    --warning-foreground: var(--color-amber-400);
+    --accent: --alpha(var(--color-white) / 4%);
+    --accent-foreground: var(--color-neutral-100);
+    --background: color-mix(in srgb, var(--color-neutral-950) 95%, var(--color-white));
+    --border: --alpha(var(--color-white) / 6%);
+    --card: color-mix(in srgb, var(--background) 98%, var(--color-white));
+    --card-foreground: var(--color-neutral-100);
+    --destructive: color-mix(in srgb, var(--color-red-500) 90%, var(--color-white));
+    --foreground: var(--color-neutral-100);
+    --input: --alpha(var(--color-white) / 8%);
+    --muted: --alpha(var(--color-white) / 4%);
+    --muted-foreground: color-mix(in srgb, var(--color-neutral-500) 90%, var(--color-white));
+    --popover: color-mix(in srgb, var(--background) 98%, var(--color-white));
+    --popover-foreground: var(--color-neutral-100);
+    --primary: var(--color-neutral-100);
+    --primary-foreground: var(--color-neutral-800);
+    --ring: var(--color-neutral-500);
+    --secondary: --alpha(var(--color-white) / 4%);
+    --secondary-foreground: var(--color-neutral-100);
+    --chart-1: var(--color-blue-700);
+    --chart-2: var(--color-emerald-500);
+    --chart-3: var(--color-amber-500);
+    --chart-4: var(--color-purple-500);
+    --chart-5: var(--color-rose-500);
+    --code: color-mix(in srgb, var(--background) 98%, var(--color-white));
+    --code-foreground: var(--foreground);
+    --code-highlight: --alpha(var(--color-white) / 4%);
+    --sidebar: color-mix(in srgb, var(--color-neutral-950) 97%, var(--color-white));
+    --sidebar-accent: --alpha(var(--color-white) / 4%);
+    --sidebar-accent-foreground: var(--color-neutral-100);
+    --sidebar-border: --alpha(var(--color-white) / 5%);
+    --sidebar-foreground: color-mix(in srgb, var(--color-neutral-100) 64%, var(--sidebar));
+    --sidebar-primary: var(--color-neutral-100);
+    --sidebar-primary-foreground: var(--color-neutral-800);
+    --sidebar-ring: var(--color-neutral-400);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    }
+  body {
+    @apply bg-background text-foreground;
+    }
+  code, kbd, samp, pre {
+    font-family: var(--font-mono);
+    }
+  html {
+    @apply font-sans antialiased;
+    }
+}
+/* ── Spooki look: soft, airy, cute (Muse-inspired) ─────────────────────── */
+:root {
+  --canvas: #fbfbfc;
+  --canvas-glow: #bcdcff;
+  --surface: #ffffff;
+  --bubble-assistant: #eeeff2;
+  --bubble-user: #d3e8ff;
+  --bubble-user-foreground: #0b2545;
+  --brand-from: #1877f2;
+  --brand-to: #5b5cf0;
+  --soft-shadow: 0 6px 24px -8px rgb(15 23 42 / 0.18), 0 2px 6px -2px rgb(15 23 42 / 0.08);
+}
+.dark {
+  --canvas: #0b1020;
+  --canvas-glow: #17336b;
+  --surface: #151b2e;
+  --bubble-assistant: #1d2438;
+  --bubble-user: #1f4b8f;
+  --bubble-user-foreground: #eaf3ff;
+  --soft-shadow: 0 6px 24px -8px rgb(0 0 0 / 0.6), 0 2px 6px -2px rgb(0 0 0 / 0.4);
+}
+
+@theme inline {
+  --color-canvas: var(--canvas);
+  --color-surface: var(--surface);
+  --color-bubble-assistant: var(--bubble-assistant);
+  --color-bubble-user: var(--bubble-user);
+  --color-bubble-user-foreground: var(--bubble-user-foreground);
+  --color-brand-from: var(--brand-from);
+  --color-brand-to: var(--brand-to);
+  --shadow-soft: var(--soft-shadow);
+  --animate-dot: dot 1.2s ease-in-out infinite;
+  --animate-float: float 1.6s ease-in-out infinite;
+  --animate-bob: float 3.2s ease-in-out infinite;
+  --animate-pop: pop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  /* No `opacity` in `to`: animate toward the element's own opacity (e.g. disabled items). */
+  @keyframes pop {
+    from { opacity: 0; transform: translateY(8px) scale(0.94); }
+    to { transform: none; }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+  }
+  @keyframes dot {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.45; }
+    30% { transform: translateY(-4px); opacity: 1; }
+  }
+}
+
+@layer base {
+  html, body, #root {
+    height: 100%;
+  }
+  body {
+    background-color: var(--canvas);
+    background-image: linear-gradient(to top, var(--canvas-glow) 0%, transparent 45%);
+    background-attachment: fixed;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior: none;
+  }
+}
+
+@utility brand-gradient {
+  background-image: linear-gradient(90deg, var(--brand-from), var(--brand-to));
+  color: white;
+}
+
+/* Streaming reply: words drift in from a soft blur; a little glowing dot leads the way. */
+@layer components {
+  .stream-word {
+    animation: stream-word 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .stream-caret {
+    display: inline-block;
+    width: 0.62em;
+    height: 0.62em;
+    margin-left: 0.25em;
+    vertical-align: -0.02em;
+    border-radius: 9999px;
+    background-image: linear-gradient(135deg, var(--brand-from), var(--brand-to));
+    box-shadow: 0 0 10px 1px color-mix(in srgb, var(--brand-from) 45%, transparent);
+    animation: stream-caret 1.1s ease-in-out infinite;
+  }
+}
+@keyframes stream-word {
+  from { opacity: 0; filter: blur(4px); transform: translateY(0.18em); }
+  to { opacity: 1; filter: blur(0); transform: none; }
+}
+@keyframes stream-caret {
+  0%, 100% { transform: translateY(0) scale(0.85); opacity: 0.75; }
+  50% { transform: translateY(-0.18em) scale(1.08); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stream-word, .stream-caret { animation: none; }
+}
+
+/* Messages dissolve into the background under the floating header and above the composer.
+   --composer-h is set from the composer's measured height. */
+@utility fade-edges {
+  --fade-start: max(env(safe-area-inset-top), 0.75rem);
+  --fade-end: calc(100% - var(--composer-h, 5rem));
+  --fade-mask: linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent var(--fade-start),
+    black calc(var(--fade-start) + 6rem),
+    black calc(var(--fade-end) - 2.5rem),
+    transparent calc(var(--fade-end) + 1.5rem)
+  );
+  -webkit-mask-image: var(--fade-mask);
+  mask-image: var(--fade-mask);
+}
+
+/* Dictation: ripples spread from the mic bubble while little sound bars bounce inside. */
+@layer components {
+  .mic-ripple {
+    position: absolute;
+    inset: 0;
+    border-radius: 9999px;
+    background: color-mix(in srgb, var(--brand-from) 35%, transparent);
+    animation: mic-ripple 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+    pointer-events: none;
+  }
+  .mic-bar {
+    width: 3px;
+    border-radius: 9999px;
+    background: currentColor;
+    animation: mic-bar 0.9s ease-in-out infinite;
+  }
+}
+@keyframes mic-ripple {
+  from { transform: scale(1); opacity: 0.7; }
+  to { transform: scale(1.9); opacity: 0; }
+}
+@keyframes mic-bar {
+  0%, 100% { height: 4px; }
+  50% { height: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mic-ripple { display: none; }
+  .mic-bar { animation: none; height: 10px; }
+}
+
+/* Stop button: a gradient comet orbits it while the agent works; the square gently breathes. */
+@layer components {
+  .stop-orbit {
+    position: absolute;
+    inset: -3px;
+    border-radius: 9999px;
+    background: conic-gradient(from 0deg, transparent 0 55%, var(--brand-from) 80%, var(--brand-to) 100%);
+    -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), black calc(100% - 2px));
+    mask: radial-gradient(farthest-side, transparent calc(100% - 2.5px), black calc(100% - 2px));
+    animation: stop-orbit 1.1s linear infinite, pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+}
+@keyframes stop-orbit {
+  to { rotate: 360deg; }
+}
+@theme inline {
+  --animate-breathe: breathe 1.6s ease-in-out infinite;
+  @keyframes breathe {
+    0%, 100% { scale: 1; }
+    50% { scale: 0.8; }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stop-orbit, .animate-breathe { animation: none; }
+}
+
+/* Retry: pops in with a wiggle, the arrow nudges now and then, and spins around when tapped. */
+@layer components {
+  .retry-enter {
+    animation:
+      pop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) both,
+      retry-wiggle 0.6s ease-in-out 0.35s;
+  }
+  .retry-nudge {
+    animation: retry-nudge 3.2s ease-in-out 1.2s infinite;
+  }
+  .retry-spin {
+    animation: retry-spin 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+}
+@keyframes retry-wiggle {
+  0%, 100% { rotate: 0deg; }
+  20% { rotate: -6deg; }
+  40% { rotate: 5deg; }
+  60% { rotate: -3deg; }
+  80% { rotate: 2deg; }
+}
+@keyframes retry-nudge {
+  0%, 82%, 100% { rotate: 0deg; }
+  88% { rotate: -40deg; }
+  94% { rotate: 20deg; }
+}
+@keyframes retry-spin {
+  from { rotate: 0deg; }
+  to { rotate: 360deg; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .retry-enter, .retry-nudge, .retry-spin { animation: none; }
+}
+
+/* Chat ⇄ Settings (View Transitions). Settings slides in from the menu's side while the chat
+   sinks back; the ☰/‹ button spins into its new icon and the avatar flies between screens. */
+::view-transition-group(*) {
+  animation-duration: 0.5s;
+  animation-timing-function: cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+:root[data-nav='forward']::view-transition-old(root) {
+  animation: vt-sink 0.35s ease-in both;
+}
+:root[data-nav='forward']::view-transition-new(root) {
+  animation: vt-slide-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+:root[data-nav='back']::view-transition-old(root) {
+  animation: vt-slide-out 0.3s ease-in both;
+}
+:root[data-nav='back']::view-transition-new(root) {
+  animation: vt-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+/* Keep the avatar above its name pill while they morph, too. */
+::view-transition-group(bot-avatar) {
+  z-index: 2;
+}
+::view-transition-group(bot-name) {
+  z-index: 1;
+}
+/* Shared elements only morph on screen changes, not on a theme switch. */
+:root[data-nav='theme'] * {
+  view-transition-name: none !important;
+}
+::view-transition-old(nav-button) {
+  animation: vt-spin-out 0.25s ease-in both;
+}
+::view-transition-new(nav-button) {
+  animation: vt-spin-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes vt-slide-in {
+  from { opacity: 0; transform: translateX(-35%) scale(0.96); }
+}
+@keyframes vt-slide-out {
+  to { opacity: 0; transform: translateX(-35%) scale(0.96); }
+}
+@keyframes vt-sink {
+  to { opacity: 0; transform: scale(0.92); filter: blur(3px); }
+}
+@keyframes vt-rise {
+  from { opacity: 0; transform: scale(0.92); filter: blur(3px); }
+}
+@keyframes vt-spin-out {
+  to { opacity: 0; transform: rotate(90deg) scale(0.6); }
+}
+@keyframes vt-spin-in {
+  from { opacity: 0; transform: rotate(-90deg) scale(0.6); }
+}
+
+/* Theme switch: the new theme grows as a circle from the tapped option. */
+:root[data-nav='theme']::view-transition-old(root) {
+  animation: none;
+}
+:root[data-nav='theme']::view-transition-new(root) {
+  animation: vt-reveal 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes vt-reveal {
+  from { clip-path: circle(0 at var(--reveal-x, 50%) var(--reveal-y, 50%)); }
+  to { clip-path: circle(150vmax at var(--reveal-x, 50%) var(--reveal-y, 50%)); }
+}
+
+/* Settings: the pen pill slides out from behind the name pill once the page has settled. */
+@layer components {
+  .pen-peek {
+    /* `backwards`: after the animation the element's own translate/scale (centering, press) apply. */
+    animation: pen-peek 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) 0.35s backwards;
+  }
+}
+@keyframes pen-peek {
+  from { opacity: 0; translate: -130% -50%; scale: 0.6; }
+  to { opacity: 1; translate: 0 -50%; scale: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pen-peek { animation: none; }
+}
