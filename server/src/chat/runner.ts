@@ -1,6 +1,9 @@
 import type { HermesTarget, StreamChat } from '../hermes/client.js';
 import { previewText, type PushSender } from '../push/sender.js';
+import { createLogger, describeError } from '../log.js';
 import { buildHistory } from './history.js';
+
+const log = createLogger('chat');
 import type { Message, MessageStore } from './messages.js';
 
 export type ChatStreamEvent =
@@ -36,7 +39,6 @@ export interface ChatRunnerDeps {
   push: PushSender;
   historyWindow: number;
   botName?: () => string;
-  log?: (...a: unknown[]) => void;
 }
 
 export const STOPPED_NOTE = '_Stopped_';
@@ -54,6 +56,7 @@ export class ChatRunner {
   /** Interrupts the running reply. The partial text is kept. Returns false when idle. */
   stop(): boolean {
     if (!this.running || !this.controller) return false;
+    log.info('stop requested');
     this.controller.abort();
     return true;
   }
@@ -80,12 +83,11 @@ export class ChatRunner {
     this.controller = controller;
     const { signal } = controller;
     let attached: Listener | null = listener;
-    const log = this.d.log ?? console.error;
     const emit = (e: ChatStreamEvent) => {
       try {
         attached?.(e);
       } catch (err) {
-        log('chat: listener failed', err);
+        log.error('listener failed', { error: describeError(err) });
       }
     };
     initial.forEach(emit);
@@ -123,7 +125,7 @@ export class ChatRunner {
           }
         }
       } catch (err) {
-        error = err instanceof Error ? err.message : String(err);
+        error = describeError(err);
       }
       const wasStopped = signal.aborted;
       if (wasStopped) error = null;
@@ -145,12 +147,16 @@ export class ChatRunner {
       });
       this.running = false;
       this.controller = null;
+      const summary = { chars: text.length, client: attached !== null ? 'connected' : 'gone' };
+      if (wasStopped) log.info('reply stopped', summary);
+      else if (error) log.warn('reply failed', { ...summary, error });
+      else log.info('reply saved', summary);
       emit(error ? { type: 'error', error, message: saved } : { type: 'done', message: saved });
 
       if (!attached && !wasStopped) {
         await this.d.push
           .sendToAll({ title: this.d.botName?.() ?? 'Spooki', body: previewText(saved.content), url: '/' })
-          .catch((err) => log('chat: push failed', err));
+          .catch((err) => log.error('push failed', { error: describeError(err) }));
       }
     })();
 

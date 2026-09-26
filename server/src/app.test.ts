@@ -8,6 +8,13 @@ import { MessageStore } from './chat/messages.js';
 import { ChatRunner } from './chat/runner.js';
 import { SubscriptionStore } from './push/subscriptions.js';
 import { fakePush, fakeStream, parseSseText } from './test/helpers.js';
+import { afterEach } from 'vitest';
+import { setLogLevel, setLogSink } from './log.js';
+
+afterEach(() => {
+  setLogSink(undefined);
+  setLogLevel('silent');
+});
 
 let app: ReturnType<typeof createApp>;
 
@@ -23,11 +30,23 @@ beforeEach(() => {
     listModels: async () => ({ ok: true, models: [] }),
     messages,
     runner: new ChatRunner({
-      messages, push: fakePush(), historyWindow: 40, getTarget: () => ({ url: 'x', apiKey: 'k' }), log: () => {},
+      messages, push: fakePush(), historyWindow: 40, getTarget: () => ({ url: 'x', apiKey: 'k' }),
       stream: fakeStream([{ type: 'delta', text: 'pong' }, { type: 'done' }]),
     }),
     subs: new SubscriptionStore(db),
     vapid: { publicKey: 'pub', privateKey: 'priv', subject: 'mailto:x' },
+  });
+});
+
+describe('request log', () => {
+  it('logs API requests with status and timing, but not health checks', async () => {
+    const lines: string[] = [];
+    setLogLevel('info');
+    setLogSink((l) => lines.push(l));
+    await app.request('/api/health');
+    await app.request('/api/messages');
+    expect(lines).toHaveLength(1);
+    expect(lines[0]).toMatch(/INFO  http: GET \/api\/messages status=401 ms=\d+$/);
   });
 });
 

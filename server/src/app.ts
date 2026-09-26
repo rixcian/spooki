@@ -13,6 +13,7 @@ import { pushRoutes } from './push/routes.js';
 import type { SubscriptionStore } from './push/subscriptions.js';
 import type { VapidKeys } from './push/vapid.js';
 import { settingsRoutes } from './settings/routes.js';
+import { createLogger } from './log.js';
 import type { SettingsStore } from './settings/store.js';
 
 export interface AppDeps {
@@ -28,8 +29,20 @@ export interface AppDeps {
   vapid: VapidKeys;
 }
 
+const httpLog = createLogger('http');
+
 export function createApp(d: AppDeps): Hono {
   const app = new Hono();
+  // One line per API request. Streams are logged when their headers go out.
+  app.use('/api/*', async (c, next) => {
+    const started = Date.now();
+    await next();
+    if (c.req.path === '/api/health') return;
+    const fields = { status: c.res.status, ms: Date.now() - started };
+    const line = `${c.req.method} ${c.req.path}`;
+    if (c.res.status >= 500) httpLog.error(line, fields);
+    else httpLog.info(line, fields);
+  });
   app.use('/api/*', requireSession(d.sessions));
   app.get('/api/health', (c) => c.json({ ok: true }));
   app.route('/api/auth', authRoutes({ verify: d.verify, sessions: d.sessions, limiter: d.limiter }));

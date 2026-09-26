@@ -1,4 +1,4 @@
-import { mkdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { serve } from '@hono/node-server';
 import { serveStatic } from '@hono/node-server/serve-static';
@@ -17,10 +17,21 @@ import { createPushSender } from './push/sender.js';
 import { SubscriptionStore } from './push/subscriptions.js';
 import { loadOrCreateVapid } from './push/vapid.js';
 import { SettingsStore, botName, effectiveHermes } from './settings/store.js';
+import { dataDirProblem } from './dataDir.js';
+import { createLogger, describeError } from './log.js';
+
+const log = createLogger('spooki');
+
+// server/package.json, from both src/ (dev) and dist/ (Docker).
+const VERSION = (JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as { version: string }).version;
 
 async function main() {
   const config = loadConfig(process.env);
-  mkdirSync(config.dataDir, { recursive: true });
+  const problem = dataDirProblem(config.dataDir);
+  if (problem) {
+    log.error(problem);
+    process.exit(1);
+  }
   const db = openDb(join(config.dataDir, 'spooki.db'));
 
   const messages = new MessageStore(db);
@@ -60,11 +71,21 @@ async function main() {
   await startCronWatcher({ dir: config.cronOutputDir, seen, messages, push, botName: () => botName(settings) });
 
   serve({ fetch: app.fetch, port: config.port }, (info) => {
-    console.log(`spooki listening on :${info.port}`);
+    const hermes = effectiveHermes(settings, config);
+    log.info(`v${VERSION} listening on :${info.port}`, {
+      dataDir: config.dataDir,
+      hermesUrl: hermes.url,
+      hermesUrlFrom: hermes.urlSource,
+      apiKey: hermes.apiKey ? `set (from ${hermes.keySource})` : 'NOT SET',
+      cronDir: config.cronOutputDir,
+      historyWindow: config.historyWindow,
+      pushDevices: subs.all().length,
+    });
   });
 }
 
 main().catch((err) => {
-  console.error(err);
+  log.error('failed to start', { error: describeError(err) });
+  if (err instanceof Error && err.stack) console.error(err.stack);
   process.exit(1);
 });

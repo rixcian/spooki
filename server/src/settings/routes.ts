@@ -10,6 +10,9 @@ import {
   effectiveHermes,
   type SettingsStore,
 } from './store.js';
+import { createLogger } from '../log.js';
+
+const log = createLogger('settings');
 
 export interface SettingsView {
   hermesUrl: string;
@@ -60,6 +63,8 @@ export function settingsRoutes({ settings, config, listModels }: SettingsDeps): 
     if (url && !isHttpUrl(url)) return c.json({ error: 'Invalid URL, use http:// or https://' }, 400);
     if (name.length > MAX_BOT_NAME) return c.json({ error: `Name must be at most ${MAX_BOT_NAME} characters` }, 400);
     if (name) settings.set(BOT_NAME_KEY, name);
+    // Never log the key itself.
+    if (url || key || name) log.info('saved', { hermesUrl: url || undefined, apiKeyChanged: key ? true : undefined, botName: name || undefined });
     if (url) settings.set(HERMES_URL_KEY, url);
     if (key) settings.set(HERMES_KEY_KEY, key);
     return c.json(view());
@@ -69,6 +74,7 @@ export function settingsRoutes({ settings, config, listModels }: SettingsDeps): 
   app.delete('/', (c) => {
     settings.delete(HERMES_URL_KEY);
     settings.delete(HERMES_KEY_KEY);
+    log.info('Hermes connection reset to env defaults');
     return c.json(view());
   });
 

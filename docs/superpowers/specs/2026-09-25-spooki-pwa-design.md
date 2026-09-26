@@ -278,6 +278,19 @@ Precedence for the Hermes URL and key: **settings table > env**.
   nginx does not buffer them. No custom NPM config is needed.
 - **Deploy command:** `git pull && docker compose up -d --build`.
 
+## Logging
+
+One line per event on stdout/stderr (`docker logs`):
+`<ISO time> <LEVEL> <scope>: <message> key=value …`, level from `LOG_LEVEL`
+(default `info`). Logged: a startup summary (version, data dir, Hermes URL,
+whether a key is set - never the key), every `/api/*` request except health
+checks with status and timing, logins (IP) and rate limiting, Hermes requests
+and their outcome, chat runs (saved / failed / stopped), cron deliveries,
+push sends and pruned subscriptions, and settings changes. Hermes errors carry
+the real cause (e.g. `connect ECONNREFUSED 10.0.1.32:8642`, `timed out`,
+`HTTP 401 … check the API key`), shown in the app too. An unwritable data
+directory stops the server with the uid, the owner and the `chown` fix.
+
 ## Error handling
 
 - **Hermes unreachable or non-2xx:** send an `error` SSE event, save the
