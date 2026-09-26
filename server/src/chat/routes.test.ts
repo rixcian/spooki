@@ -12,7 +12,7 @@ beforeEach(() => { messages = new MessageStore(openDb(':memory:')); });
 function makeApp(events: HermesEvent[], gate?: Promise<void>) {
   const runner = new ChatRunner({
     messages, stream: fakeStream(events, gate), push: fakePush(), historyWindow: 40,
-    getTarget: () => ({ url: 'http://h', apiKey: 'k' }), log: () => {},
+    getTarget: () => ({ url: 'http://h', apiKey: 'k' }),
   });
   return { app: chatRoutes({ messages, runner }), runner };
 }

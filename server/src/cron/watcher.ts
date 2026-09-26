@@ -6,6 +6,9 @@ import type { MessageStore } from '../chat/messages.js';
 import { previewText, type PushSender } from '../push/sender.js';
 import { isCronOutputPath, parseCronFile } from './parse.js';
 import type { CronSeenStore } from './seen.js';
+import { createLogger, describeError } from '../log.js';
+
+const log = createLogger('cron');
 
 export interface CronDeps {
   dir: string;
@@ -15,7 +18,6 @@ export interface CronDeps {
   botName?: () => string;
   /** Full rescan interval: a safety net for missed fs events. */
   rescanMs?: number;
-  log?: (...a: unknown[]) => void;
 }
 
 // Marker row: not a valid output path, so it can never collide with a real file.
@@ -24,7 +26,6 @@ const BASELINE = '.baseline';
 const toRel = (dir: string, abs: string) => relative(dir, abs).split(sep).join('/');
 
 export async function processFile(d: CronDeps, absPath: string): Promise<void> {
-  const log = d.log ?? console.error;
   const rel = toRel(d.dir, absPath);
   if (!isCronOutputPath(rel) || d.seen.has(rel)) return;
   d.seen.add(rel); // claim synchronously so concurrent add/scan events can't double-deliver
@@ -34,7 +35,7 @@ export async function processFile(d: CronDeps, absPath: string): Promise<void> {
     text = await readFile(absPath, 'utf8');
   } catch (err) {
     d.seen.remove(rel); // unreadable now (e.g. permissions) — retry on next scan
-    log('cron: cannot read', rel, err);
+    log.warn('cannot read output file, will retry', { file: rel, error: describeError(err) });
     return;
   }
 
@@ -42,16 +43,20 @@ export async function processFile(d: CronDeps, absPath: string): Promise<void> {
   try {
     result = parseCronFile(rel, text);
   } catch (err) {
-    log('cron: parse failed, delivering raw', rel, err);
+    log.warn('parse failed, delivering raw text', { file: rel, error: describeError(err) });
     const jobId = rel.split('/')[0];
     result = { jobId, jobName: jobId, content: text };
   }
-  if (!result) return;
+  if (!result) {
+    log.debug('skipped (silent, empty or no response)', { file: rel });
+    return;
+  }
 
   const message = d.messages.add({ role: 'assistant', source: 'cron', content: result.content, cronJob: result.jobName });
   await d.push
     .sendToAll({ title: `${d.botName?.() ?? 'Spooki'} · ${result.jobName}`, body: previewText(message.content), url: '/' })
-    .catch((err) => log('cron: push failed', err));
+    .catch((err) => log.error('push failed', { error: describeError(err) }));
+  log.info('delivered', { job: result.jobName, file: rel });
 }
 
 async function listOutputFiles(dir: string): Promise<string[]> {
@@ -74,6 +79,7 @@ export async function initialScan(d: CronDeps): Promise<void> {
       if (isCronOutputPath(rel)) d.seen.add(rel);
     }
     d.seen.add(BASELINE);
+    log.info('first start: marked existing output as seen without delivering', { files: files.length });
     return;
   }
   for (const f of files) await processFile(d, f);
@@ -81,18 +87,16 @@ export async function initialScan(d: CronDeps): Promise<void> {
 
 // Safety net for missed fs events. processFile dedupes via cron_seen, so this is cheap and safe.
 export function startRescan(d: CronDeps, everyMs: number): () => void {
-  const log = d.log ?? console.error;
   const timer = setInterval(() => {
-    initialScan(d).catch((err) => log('cron: rescan failed', err));
+    initialScan(d).catch((err) => log.error('rescan failed', { error: describeError(err) }));
   }, everyMs);
   timer.unref();
   return () => clearInterval(timer);
 }
 
 export async function startCronWatcher(d: CronDeps): Promise<{ close(): Promise<void> }> {
-  const log = d.log ?? console.error;
   if (!existsSync(d.dir)) {
-    log(`cron: ${d.dir} does not exist; cron messages are disabled`);
+    log.warn('output directory does not exist; cron messages are disabled', { dir: d.dir });
     return { close: async () => {} };
   }
   await initialScan(d);
@@ -104,7 +108,7 @@ export async function startCronWatcher(d: CronDeps): Promise<{ close(): Promise<
   watcher.on('add', (p: string) => {
     void processFile(d, p);
   });
-  watcher.on('error', (err: unknown) => log('cron: watcher error', err));
+  watcher.on('error', (err: unknown) => log.error('watcher error', { error: describeError(err) }));
   await new Promise<void>((resolve) => watcher.once('ready', () => resolve()));
   const stopRescan = startRescan(d, d.rescanMs ?? 60_000);
   return {

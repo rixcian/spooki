@@ -192,10 +192,41 @@ checkout instead, swap `image:` for `build: .` in the compose file.
 | `DATA_DIR` | `/data` | SQLite database and generated VAPID keys |
 | `HISTORY_WINDOW` | `40` | Messages sent to Hermes with each request |
 | `PORT` | `3000` | Port the server listens on |
+| `LOG_LEVEL` | `info` | `debug`, `info`, `warn` or `error` |
 
 Compose-only, in `.env`: `SPOOKI_TAG` (image tag, default `latest`),
 `HERMES_CRON_OUTPUT` (host path of the cron output), `HERMES_NETWORK` and
 `NPM_NETWORK` (the external networks), `HERMES_UID` / `HERMES_GID`.
+
+## Troubleshooting
+
+Everything goes to the container log, one line per event:
+
+```bash
+docker logs -f spooki
+```
+
+```
+2026-09-26T09:52:07Z INFO  spooki: v0.1.2 listening on :3000 hermesUrl=http://hermes:8642 apiKey="set (from env)" …
+2026-09-26T09:52:14Z ERROR hermes: chat request failed error="Cannot reach Hermes at http://hermes:8642: fetch failed: connect ECONNREFUSED 10.0.1.32:8642"
+```
+
+The same message appears in the app (in the failed reply, and under **Test
+connection** in settings).
+
+| The error says | Usually means |
+|---|---|
+| `ECONNREFUSED` | Nothing listens there: Hermes' API server is off, bound to `127.0.0.1` (set `API_SERVER_HOST=0.0.0.0`), or the port is not published |
+| `timed out` / `ETIMEDOUT` | Wrong IP, a firewall, or the containers are on different networks |
+| `ENOTFOUND` | The hostname does not resolve - use the container name on a shared network, or an IP |
+| `HTTP 401 from Hermes` | Reached Hermes, but the API key does not match `API_SERVER_KEY` |
+| `… is not writable` at startup | The data folder's owner differs from the container's user; the log prints the `chown` that fixes it |
+
+To poke at Hermes from inside the container (the image has no `curl`):
+
+```bash
+docker exec spooki node -e "fetch('http://hermes:8642/v1/models',{headers:{authorization:'Bearer <key>'}}).then(async r=>console.log(r.status, await r.text())).catch(e=>console.log(e.message, e.cause?.code, e.cause?.message))"
+```
 
 ## Security
 

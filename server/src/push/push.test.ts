@@ -7,6 +7,7 @@ import { loadOrCreateVapid } from './vapid.js';
 import { SubscriptionStore, type StoredSubscription } from './subscriptions.js';
 import { createPushSender, previewText } from './sender.js';
 import { pushRoutes } from './routes.js';
+import { setLogLevel, setLogSink } from '../log.js';
 
 const sub = (n: number): StoredSubscription => ({ endpoint: `https://push.example/${n}`, keys: { p256dh: `p${n}`, auth: `a${n}` } });
 const vapid = { publicKey: 'pub', privateKey: 'priv', subject: 'mailto:x@y.z' };
@@ -46,7 +47,9 @@ describe('createPushSender', () => {
     subs.upsert(sub(2));
     subs.upsert(sub(3));
     const sent: { endpoint: string; payload: string }[] = [];
-    const logs: unknown[] = [];
+    const logs: string[] = [];
+    setLogLevel('error');
+    setLogSink((l) => logs.push(l));
     const sender = createPushSender(
       subs,
       vapid,
@@ -56,13 +59,15 @@ describe('createPushSender', () => {
         if (s.endpoint.endsWith('/2')) throw Object.assign(new Error('gone'), { statusCode: 410 });
         if (s.endpoint.endsWith('/3')) throw Object.assign(new Error('oops'), { statusCode: 500 });
       },
-      (...a) => logs.push(a),
     );
     await sender.sendToAll({ title: 'Spooki', body: 'hello', url: '/' });
     expect(sent).toHaveLength(3);
     expect(JSON.parse(sent[0].payload)).toEqual({ title: 'Spooki', body: 'hello', url: '/' });
     expect(subs.all().map((s) => s.endpoint)).toEqual([sub(1).endpoint, sub(3).endpoint]);
+    setLogSink(undefined);
+    setLogLevel('silent');
     expect(logs).toHaveLength(1);
+    expect(logs[0]).toMatch(/push: send failed service=push\.example status=500 error=oops/);
   });
 });
 

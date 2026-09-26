@@ -68,7 +68,7 @@ describe('cron watcher', () => {
     const db = openDb(':memory:');
     messages = new MessageStore(db);
     seen = new CronSeenStore(db);
-    deps = { dir, seen, messages, push: fakePush(), log: () => {} };
+    deps = { dir, seen, messages, push: fakePush() };
   });
 
   afterEach(async () => { await closeWatcher?.(); closeWatcher = undefined; });

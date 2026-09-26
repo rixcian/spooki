@@ -1,6 +1,17 @@
 import { describe, it, expect, afterEach } from 'vitest';
 import { streamChat, listModels, type HermesEvent } from './client.js';
 import { startFakeHermes, chunk, finish, tool, DONE } from '../test/fakeHermes.js';
+import { createServer } from 'node:net';
+
+// A port nothing listens on (fetch refuses 'bad ports' like 1 before even connecting).
+function closedPort(): Promise<number> {
+  return new Promise((resolve) => {
+    const s = createServer().listen(0, '127.0.0.1', () => {
+      const { port } = s.address() as { port: number };
+      s.close(() => resolve(port));
+    });
+  });
+}
 
 let close: (() => Promise<void>) | undefined;
 afterEach(async () => { await close?.(); close = undefined; });
@@ -85,8 +96,8 @@ describe('streamChat', () => {
       events.push(e);
       if (e.type === 'delta') controller.abort();
     }
-    expect(events[0]).toEqual({ type: 'delta', text: 'working' });
-    expect(events.at(-1)?.type).toBe('error');
+    // Once the caller aborted, the stream just ends: no error event to report (or log).
+    expect(events).toEqual([{ type: 'delta', text: 'working' }]);
   });
 
   it('reports HTTP errors', async () => {
@@ -96,7 +107,7 @@ describe('streamChat', () => {
     });
     close = fake.close;
     const events = await collect(streamChat({ url: fake.url, apiKey: 'k' }, []));
-    expect(events).toEqual([{ type: 'error', message: 'Hermes HTTP 401: {"error":"bad key"}' }]);
+    expect(events).toEqual([{ type: 'error', message: 'HTTP 401 from Hermes - check the API key: {"error":"bad key"}' }]);
   });
 
   it('reports a stream that ends without [DONE]', async () => {
@@ -107,10 +118,14 @@ describe('streamChat', () => {
   });
 
   it('reports an unreachable server', async () => {
-    const events = await collect(streamChat({ url: 'http://127.0.0.1:1', apiKey: 'k' }, []));
+    const port = await closedPort();
+    const events = await collect(streamChat({ url: `http://127.0.0.1:${port}`, apiKey: 'k' }, []));
     expect(events).toHaveLength(1);
     expect(events[0]).toMatchObject({ type: 'error' });
-    expect((events[0] as { message: string }).message).toMatch(/^Cannot reach Hermes/);
+    // The real cause, not just "fetch failed", so a wrong host/port is obvious.
+    expect((events[0] as { message: string }).message).toMatch(
+      new RegExp(`^Cannot reach Hermes at http://127\\.0\\.0\\.1:${port}: fetch failed: connect ECONNREFUSED 127\\.0\\.0\\.1:${port}$`),
+    );
   });
 });
 
@@ -128,6 +143,18 @@ describe('listModels', () => {
   it('returns an error for non-2xx', async () => {
     const fake = await startFakeHermes((_req, res) => { res.writeHead(401); res.end(); });
     close = fake.close;
-    expect(await listModels({ url: fake.url, apiKey: 'k' })).toEqual({ ok: false, error: 'HTTP 401' });
+    expect(await listModels({ url: fake.url, apiKey: 'k' })).toEqual({
+      ok: false,
+      error: 'HTTP 401 from Hermes - check the API key',
+    });
+  });
+
+  it('explains an unreachable server', async () => {
+    const port = await closedPort();
+    const r = await listModels({ url: `http://127.0.0.1:${port}`, apiKey: 'k' });
+    expect(r).toEqual({
+      ok: false,
+      error: `Cannot reach Hermes at http://127.0.0.1:${port}: fetch failed: connect ECONNREFUSED 127.0.0.1:${port}`,
+    });
   });
 });

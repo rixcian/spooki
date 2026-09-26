@@ -12,7 +12,7 @@ function makeRunner(events: HermesEvent[], gate?: Promise<void>) {
   const stream = fakeStream(events, gate);
   const push = fakePush();
   const runner = new ChatRunner({
-    messages, stream, push, historyWindow: 40, getTarget: () => ({ url: 'http://h', apiKey: 'k' }), log: () => {},
+    messages, stream, push, historyWindow: 40, getTarget: () => ({ url: 'http://h', apiKey: 'k' }),
   });
   return { runner, stream, push };
 }
@@ -75,7 +75,7 @@ describe('ChatRunner', () => {
   it('titles background pushes with the current bot name', async () => {
     const push = fakePush();
     const runner = new ChatRunner({
-      messages, push, historyWindow: 40, getTarget: () => ({ url: '', apiKey: '' }), log: () => {},
+      messages, push, historyWindow: 40, getTarget: () => ({ url: '', apiKey: '' }),
       stream: fakeStream([{ type: 'delta', text: 'hi' }, { type: 'done' }]), botName: () => 'Mimi',
     });
     const handle = runner.send('q', () => {});
@@ -103,7 +103,7 @@ describe('ChatRunner', () => {
     const push = fakePush();
     let seenSignal: AbortSignal | undefined;
     const runner = new ChatRunner({
-      messages, push, historyWindow: 40, getTarget: () => ({ url: '', apiKey: '' }), log: () => {},
+      messages, push, historyWindow: 40, getTarget: () => ({ url: '', apiKey: '' }),
       stream: async function* (_t, _m, signal) {
         seenSignal = signal;
         yield { type: 'delta', text: 'Half an ans' };
@@ -137,7 +137,7 @@ describe('ChatRunner', () => {
   it('treats a throwing stream as an error', async () => {
     const push = fakePush();
     const runner = new ChatRunner({
-      messages, push, historyWindow: 40, getTarget: () => ({ url: '', apiKey: '' }), log: () => {},
+      messages, push, historyWindow: 40, getTarget: () => ({ url: '', apiKey: '' }),
       // eslint-disable-next-line require-yield
       stream: async function* () { throw new Error('kaput'); },
     });

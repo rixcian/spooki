@@ -3,6 +3,9 @@ import { deleteCookie, getCookie, setCookie } from 'hono/cookie';
 import type { PasswordVerifier } from './password.js';
 import type { RateLimiter } from './rateLimit.js';
 import { SESSION_TTL_MS, type SessionStore } from './sessions.js';
+import { createLogger } from '../log.js';
+
+const log = createLogger('auth');
 
 export const SESSION_COOKIE = 'spooki_session';
 
@@ -35,10 +38,14 @@ export function authRoutes({ verify, sessions, limiter }: AuthDeps): Hono {
 
   app.post('/login', async (c) => {
     const ip = clientIp(c);
-    if (limiter.isBlocked(ip)) return c.json({ error: 'Too many attempts, try again in a minute' }, 429);
+    if (limiter.isBlocked(ip)) {
+      log.warn('login rate-limited', { ip });
+      return c.json({ error: 'Too many attempts, try again in a minute' }, 429);
+    }
     const body = (await c.req.json().catch(() => ({}))) as { password?: unknown };
     if (typeof body.password !== 'string' || !(await verify(body.password))) {
       limiter.recordFailure(ip);
+      log.warn('login failed: wrong password', { ip });
       return c.json({ error: 'Wrong password' }, 401);
     }
     setCookie(c, SESSION_COOKIE, sessions.create(), {
@@ -48,6 +55,7 @@ export function authRoutes({ verify, sessions, limiter }: AuthDeps): Hono {
       path: '/',
       maxAge: SESSION_TTL_MS / 1000,
     });
+    log.info('login ok', { ip, secureCookie: isHttps(c) });
     return c.json({ ok: true });
   });
 
