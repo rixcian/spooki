@@ -1,9 +1,14 @@
 {
   "name": "spooki",
   "private": true,
-  "workspaces": ["server", "client"],
+  "workspaces": [
+    "server",
+    "client"
+  ],
   "scripts": {
     "test": "npm test -w server && npm test -w client",
-    "build": "npm run build -w client && npm run build -w server"
-  }
+    "build": "npm run build -w client && npm run build -w server",
+    "release": "npm version --no-git-tag-version --workspaces --include-workspace-root"
+  },
+  "version": "0.1.0"
 }

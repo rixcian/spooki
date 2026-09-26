@@ -1,6 +1,8 @@
 services:
   spooki:
-    build: .
+    # Prebuilt by CI. Pin a version (e.g. :0.1.0) to upgrade by hand, or use
+    # `build: .` instead to build from this checkout.
+    image: ghcr.io/rixcian/spooki:${SPOOKI_TAG:-latest}
     container_name: spooki
     restart: unless-stopped
     env_file: .env

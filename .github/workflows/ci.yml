@@ -1,0 +1,108 @@
+name: CI
+
+# Tests every pull request and push; publishes the container image to GHCR on
+# pushes to master and on version tags, and cuts a GitHub Release for tags.
+
+on:
+  push:
+    branches: [master]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm test
+      - run: npm run typecheck -w server
+      - run: npm run build
+
+  publish:
+    needs: test
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # GitHub Release on tags
+      packages: write # GHCR
+    steps:
+      - uses: actions/checkout@v7
+
+      # A tag that disagrees with package.json publishes a mislabelled image,
+      # which is very hard to notice later. Fail loudly instead. The workspaces
+      # must agree too (`npm run release` bumps them all together).
+      - name: Check the tag matches package.json
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          for pkg in package.json server/package.json client/package.json; do
+            version="$(node -p "require('./$pkg').version")"
+            if [ "$tag" != "$version" ]; then
+              echo "::error::tag $GITHUB_REF_NAME does not match $pkg version $version"
+              exit 1
+            fi
+          done
+          echo "version $tag matches tag $GITHUB_REF_NAME"
+
+      - uses: docker/setup-buildx-action@v4
+
+      - uses: docker/login-action@v4
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          # `latest` follows releases, not master, so the server never pulls a
+          # half-finished commit. A push to master gives you `edge` instead.
+          #   v0.1.0  ->  0.1.0, 0.1, latest, sha-<short>
+          #   master  ->  edge, sha-<short>
+          # {{major}} is deliberately absent: a bare `0` would span breaking
+          # changes while the project is pre-1.0.
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
+            type=raw,value=edge,enable={{is_default_branch}}
+            type=sha,format=short
+
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          # amd64 only; add "linux/arm64" (plus docker/setup-qemu-action) if an
+          # ARM host ever needs this image. Emulated native builds are slow.
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Create the GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v3
+        with:
+          generate_release_notes: true
+          body: |
+            ```bash
+            docker pull ghcr.io/${{ github.repository }}:${{ steps.meta.outputs.version }}
+            ```

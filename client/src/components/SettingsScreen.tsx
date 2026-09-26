@@ -207,6 +207,8 @@ export function SettingsScreen({ onBack, onLoggedOut }: { onBack: () => void; on
             {notice}
           </p>
         )}
+
+        <p className="pt-2 text-center text-xs text-muted-foreground/70">Spooki v{__APP_VERSION__}</p>
       </div>
     </div>
   );
